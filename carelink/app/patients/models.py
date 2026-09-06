@@ -1,6 +1,6 @@
 from datetime import date, datetime
 
-from sqlalchemy import String
+from sqlalchemy import String, DateTime
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.database.connection import Base
@@ -22,48 +22,48 @@ class Patient(Base):
         nullable=False
     )
 
-    date_of_birth: Mapped[date] = mapped_column(
-        nullable=False
+    date_of_birth: Mapped[date | None] = mapped_column(
+        nullable=True
     ) 
 
-    sex: Mapped[str] = mapped_column(
+    sex: Mapped[str | None] = mapped_column(
         String(20), 
-        nullable=False
+        nullable=True
     )
 
-    marital_status: Mapped[str] = mapped_column(
+    marital_status: Mapped[str | None] = mapped_column(
         String(30), 
-        nullable=False
+        nullable=True
     )
 
-    religion: Mapped[str] = mapped_column(
+    religion: Mapped[str | None] = mapped_column(
         String(30), 
-        nullable=False
+        nullable=True
     )
 
-    occupation: Mapped[str] = mapped_column(
+    occupation: Mapped[str | None] = mapped_column(
         String(100), 
-        nullable=False
+        nullable=True
     )
 
-    address: Mapped[str] = mapped_column(
+    address: Mapped[str | None] = mapped_column(
         String(250), 
-        nullable=False
+        nullable=True
     )
 
-    phone_number: Mapped[str] = mapped_column(
+    phone_number: Mapped[str | None] = mapped_column(
         String(30), 
-        nullable=False
+        nullable=True
     )
 
-    blood_group: Mapped[str] = mapped_column(
+    blood_group: Mapped[str | None] = mapped_column(
         String(5), 
-        nullable=False
+        nullable=True
     )
 
-    genotype: Mapped[str] = mapped_column(
+    genotype: Mapped[str | None] = mapped_column(
         String(5), 
-        nullable=False
+        nullable=True
     )
 
     allergy_status: Mapped[str] = mapped_column(
@@ -78,9 +78,14 @@ class Patient(Base):
 
 
     created_at: Mapped[datetime] = mapped_column(
-        nullable=False
+        DateTime,
+        nullable=False,
+        default=datetime.utcnow
     )
 
     updated_at: Mapped[datetime] = mapped_column(
-        nullable=False
+        DateTime,
+        nullable=False,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow
     )
