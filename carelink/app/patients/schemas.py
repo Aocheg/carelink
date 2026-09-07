@@ -18,5 +18,5 @@ class PatientCreate(BaseModel):
 class NextOfKinCreate(BaseModel):
     full_name: str
     relationship: str
-    phone_numberrrrrr: str
+    phone_number: str
     address: str | None = None

@@ -1,4 +1,4 @@
-#!/home/student/Documents/carelink/carelink/.venv/bin/python
+#!/home/student/carelink/carelink/.venv/bin/python
 # -*- coding: utf-8 -*-
 import re
 import sys
