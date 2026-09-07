@@ -5,7 +5,7 @@ DATABASE_URL = "sqlite:///./carelink.db"
 
 engine = create_engine(
     DATABASE_URL,
-    connet_args={"check_same_thread": False}
+    connect_args={"check_same_thread": False}
 )
 
 SessionLocal = sessionmaker(
@@ -17,6 +17,7 @@ SessionLocal = sessionmaker(
 
 class Base(DeclarativeBase):
     pass
+
 
 def get_db():
     db = SessionLocal()
