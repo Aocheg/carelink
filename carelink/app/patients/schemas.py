@@ -15,6 +15,22 @@ class PatientCreate(BaseModel):
     allergy_status: str
     allergy_details: str | None = None
 
+class PatientResponse(BaseModel):
+    id: int
+    patient_number: str
+    full_name: str
+    date_of_birth: date | None
+    sex: str | None
+    marital_status: str | None
+    religion: str | None
+    occupation: str | None
+    address: str | None
+    phone_number: str | None
+    blood_group: str | None
+    genotype: str | None
+    allergy_status: str
+    allergy_details: str | None
+
 class NextOfKinCreate(BaseModel):
     full_name: str
     relationship: str
