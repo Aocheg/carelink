@@ -16,6 +16,7 @@ from app.patients.service import (
     create_next_of_kin,
     get_next_of_kins,
 )
+from app.audit.service import create_audit_log
 
 router = APIRouter(
     prefix="/patients",
@@ -32,11 +33,8 @@ def get_db():
         db.close()
 
 
-@router.post("/")
-def create_patient_endpoint(
-    patient: PatientCreate,
-    db: Session = Depends(get_db)
-):
+@router.post("/", response_model=PatientResponse, status_code=201)
+def create_patient_endpoint(patient: PatientCreate, db: Session = Depends(get_db)):
     existing_patient = find_duplicate_patient(
         db,
         patient.full_name,
@@ -51,25 +49,17 @@ def create_patient_endpoint(
 
     saved_patient = create_patient(db, patient)
     
-    return {
-        "message": "Patient created successfully",
-        "patient": {
-            "id": saved_patient.id,
-            "patient_number": saved_patient.patient_number,
-            "full_name": saved_patient.full_name,
-            "date_of_birth": saved_patient.date_of_birth,
-            "sex": saved_patient.sex,
-            "marital_status": saved_patient.marital_status,
-            "religion": saved_patient.religion,
-            "occupation": saved_patient.occupation,
-            "address": saved_patient.address,
-            "phone_number": saved_patient.phone_number,
-            "blood_group": saved_patient.blood_group,
-            "genotype": saved_patient.genotype,
-            "allergy_status": saved_patient.allergy_status,
-            "allergy_details": saved_patient.allergy_details,
-        }
-    }
+    create_audit_log(
+        db,
+        user_id=None,
+        action="CREATE",
+        entity_type="PATIENT",
+        entity_id=saved_patient.id,
+        details=f"Patient {saved_patient.patient_number} registered"
+    )
+
+    return saved_patient
+
 
 @router.get("/", response_model=list[PatientResponse])
 def get_patients_endpoint(

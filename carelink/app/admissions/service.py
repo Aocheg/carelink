@@ -7,6 +7,7 @@ from app.admissions.models import Admission
 from app.patients.models import Patient
 from app.wards.models import Ward, Bed
 from app.users.models import User
+from app.audit.service import create_audit_log
 
 
 def generate_admission_number(db: Session) -> str:
@@ -111,8 +112,16 @@ def create_admission(
     db.commit()
     db.refresh(admission)
 
-    return admission
+    create_audit_log(
+        db,
+        user_id=admission.admitted_by,
+        action="CREATE",
+        entity_type="ADMISSION",
+        entity_id=admission.id,
+        details=f"Admission {admission.admission_number} created"
+    )
 
+    return admission
 
 def get_admissions(db: Session):
     result = db.execute(
