@@ -1,14 +1,20 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-
 from app.database.connection import SessionLocal
-from app.patients.schemas import PatientCreate, PatientResponse
+from app.patients.schemas import (
+    PatientCreate,
+    PatientResponse,
+    NextOfKinCreate,
+    NextOfKinResponse,
+)
 from app.patients.service import (
     create_patient,
     get_patients,
     get_patient_by_id,
     search_patients,
     find_duplicate_patient,
+    create_next_of_kin,
+    get_next_of_kins,
 )
 
 router = APIRouter(
@@ -89,6 +95,51 @@ def search_patients_endpoint(
     )
 
     return patients
+
+@router.post(
+    "/{patient_id}/next-of-kin",
+    response_model=NextOfKinResponse
+)
+def create_next_of_kin_endpoint(
+    patient_id: int,
+    kin: NextOfKinCreate,
+    db: Session = Depends(get_db)
+):
+    patient = get_patient_by_id(db, patient_id)
+
+    if patient is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Patient not found"
+        )
+
+    return create_next_of_kin(
+        db,
+        patient_id,
+        kin
+    )
+
+
+@router.get(
+    "/{patient_id}/next-of-kin",
+    response_model=list[NextOfKinResponse]
+)
+def get_next_of_kins_endpoint(
+    patient_id: int,
+    db: Session = Depends(get_db)
+):
+    patient = get_patient_by_id(db, patient_id)
+
+    if patient is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Patient not found"
+        )
+
+    return get_next_of_kins(
+        db,
+        patient_id
+    )
     
 
 @router.get("/{patient_id}", response_model=PatientResponse)

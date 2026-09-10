@@ -2,7 +2,7 @@ from datetime import date
 from sqlalchemy import select, func
 from sqlalchemy.orm import Session
 
-from app.patients.models import Patient
+from app.patients.models import Patient, NextOfKin
 
 
 def generate_patient_number(db: Session) -> str:
@@ -102,3 +102,28 @@ def find_duplicate_patient(
     result = db.execute(query)
 
     return result.scalar_one_or_none()
+
+def create_next_of_kin(db: Session, patient_id: int, kin_data):
+    next_of_kin = NextOfKin(
+        patient_id=patient_id,
+        full_name=kin_data.full_name,
+        relationship=kin_data.relationship,
+        phone_number=kin_data.phone_number,
+        address=kin_data.address,
+        is_primary=kin_data.is_primary,
+    )
+
+    db.add(next_of_kin)
+    db.commit()
+    db.refresh(next_of_kin)
+
+    return next_of_kin
+
+def get_next_of_kins(db: Session, patient_id: int):
+    result = db.execute(
+        select(NextOfKin).where(
+            NextOfKin.patient_id == patient_id
+        )
+    )
+
+    return result.scalars().all()

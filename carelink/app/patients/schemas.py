@@ -36,3 +36,14 @@ class NextOfKinCreate(BaseModel):
     relationship: str
     phone_number: str
     address: str | None = None
+    is_primary: bool = True
+
+
+class NextOfKinResponse(BaseModel):
+    id: int
+    patient_id: int
+    full_name: str
+    relationship: str
+    phone_number: str
+    address: str | None
+    is_primary: bool
