@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy import ForeignKey, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
@@ -32,7 +32,7 @@ class AuditLog(Base):
 
     timestamp: Mapped[datetime] = mapped_column(
         nullable=False,
-        default=lambda: datetime.now(datetime.UTC)
+      default=lambda: datetime.now(timezone.utc)
     )
 
     details: Mapped[str | None] = mapped_column(

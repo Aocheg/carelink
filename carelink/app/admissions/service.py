@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -20,7 +20,7 @@ def generate_admission_number(db: Session) -> str:
 
     next_id = (last_id or 0) + 1
 
-    year = datetime.now(datetime.UTC).year
+    year = datetime.now(timezone.utc).year
 
     return f"ADM-{year}-{next_id:06d}"
 
