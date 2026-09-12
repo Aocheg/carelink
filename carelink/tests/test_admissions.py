@@ -1,4 +1,4 @@
-from app.admissions.service import create_admission
+from app.admissions.service import create_admission, get_admission_by_id
 from app.admissions.schemas import AdmissionCreate
 from app.patients.models import Patient
 from app.patients.service import create_patient
@@ -512,3 +512,64 @@ def test_successful_admission_creates_audit_log(db):
     assert audit_log.user_id == user.id
     assert audit_log.action == "CREATE"
     assert audit_log.details == f"Admission {admission.admission_number} created"
+
+
+def test_get_admission_by_id(db):
+    patient = Patient(
+        full_name="Retrieve Test Patient",
+        patient_number="CL-000001",
+        allergy_status="No known allergy",
+    )
+    db.add(patient)
+
+    facility = Facility(
+        name="Retrieve Test Facility"
+    )
+    db.add(facility)
+
+    ward = Ward(
+        facility_id=1,
+        name="Medical Ward",
+    )
+    db.add(ward)
+
+    bed = Bed(
+        ward_id=1,
+        bed_number="01",
+        status="AVAILABLE",
+    )
+    db.add(bed)
+
+    user = User(
+        username="retrieve.nurse",
+        password_hash="test",
+        full_name="Retrieve Nurse",
+        role="NURSE",
+    )
+    db.add(user)
+
+    db.commit()
+
+    admission_data = AdmissionCreate(
+        patient_id=patient.id,
+        ward_id=ward.id,
+        bed_id=bed.id,
+        source="A&E/Emergency",
+        reason_for_admission="Retrieval test admission",
+        admitted_by=user.id,
+    )
+
+    created_admission = create_admission(db, admission_data)
+
+    retrieved_admission = get_admission_by_id(
+        db,
+        created_admission.id,
+    )
+
+    assert retrieved_admission is not None
+    assert retrieved_admission.id == created_admission.id
+    assert retrieved_admission.admission_number == created_admission.admission_number
+    assert retrieved_admission.patient_id == patient.id
+    assert retrieved_admission.ward_id == ward.id
+    assert retrieved_admission.bed_id == bed.id
+    assert retrieved_admission.status == "ACTIVE"
