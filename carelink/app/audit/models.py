@@ -32,7 +32,7 @@ class AuditLog(Base):
 
     timestamp: Mapped[datetime] = mapped_column(
         nullable=False,
-        default=datetime.utcnow
+        default=lambda: datetime.now(datetime.UTC)
     )
 
     details: Mapped[str | None] = mapped_column(

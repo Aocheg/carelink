@@ -20,7 +20,7 @@ def generate_admission_number(db: Session) -> str:
 
     next_id = (last_id or 0) + 1
 
-    year = datetime.utcnow().year
+    year = datetime.now(datetime.UTC).year
 
     return f"ADM-{year}-{next_id:06d}"
 

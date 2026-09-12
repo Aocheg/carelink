@@ -87,11 +87,11 @@ class Admission(Base):
 
     created_at: Mapped[datetime] = mapped_column(
         nullable=False,
-        default=datetime.utcnow
+        default=lambda: datetime.now(datetime.UTC)
     )
 
     updated_at: Mapped[datetime] = mapped_column(
         nullable=False,
-        default=datetime.utcnow,
-        onupdate=datetime.utcnow
+        default=lambda: datetime.now(datetime.UTC),
+        onupdate=lambda: datetime.now(datetime.UTC)
     )
