@@ -107,10 +107,9 @@ def create_admission(
     )
 
     bed.status = "OCCUPIED"
-
     db.add(admission)
-    db.commit()
-    db.refresh(admission)
+
+    db.flush()
 
     create_audit_log(
         db,
@@ -120,6 +119,9 @@ def create_admission(
         entity_id=admission.id,
         details=f"Admission {admission.admission_number} created"
     )
+
+    db.commit()
+    db.refresh(admission)
 
     return admission
 
