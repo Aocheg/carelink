@@ -1,4 +1,5 @@
-from app.admissions.service import create_admission, get_admission_by_id
+from app.admissions.service import create_admission, get_admission_by_id, generate_admission_number
+from app.admissions.models import Admission
 from app.admissions.schemas import AdmissionCreate
 from app.patients.models import Patient
 from app.patients.service import create_patient
@@ -573,3 +574,132 @@ def test_get_admission_by_id(db):
     assert retrieved_admission.ward_id == ward.id
     assert retrieved_admission.bed_id == bed.id
     assert retrieved_admission.status == "ACTIVE"
+
+def test_admission_rolls_back_when_audit_creation_fails(db, monkeypatch):
+    patient = Patient(
+        full_name="Rollback Test Patient",
+        patient_number="CL-000001",
+        allergy_status="No known allergy",
+    )
+    db.add(patient)
+
+    facility = Facility(
+        name="Rollback Test Facility"
+    )
+    db.add(facility)
+
+    ward = Ward(
+        facility_id=1,
+        name="Medical Ward",
+    )
+    db.add(ward)
+
+    bed = Bed(
+        ward_id=1,
+        bed_number="01",
+        status="AVAILABLE",
+    )
+    db.add(bed)
+
+    user = User(
+        username="rollback.nurse",
+        password_hash="test",
+        full_name="Rollback Nurse",
+        role="NURSE",
+    )
+    db.add(user)
+
+    db.commit()
+
+    def failing_audit_log(*args, **kwargs):
+        raise RuntimeError("Audit creation failed")
+
+    monkeypatch.setattr(
+        "app.admissions.service.create_audit_log",
+        failing_audit_log,
+    )
+
+    admission_data = AdmissionCreate(
+        patient_id=patient.id,
+        ward_id=ward.id,
+        bed_id=bed.id,
+        source="A&E/Emergency",
+        reason_for_admission="Rollback test admission",
+        admitted_by=user.id,
+    )
+
+    try:
+        create_admission(db, admission_data)
+        assert False, "Expected RuntimeError"
+    except RuntimeError as error:
+        assert str(error) == "Audit creation failed"
+
+    admissions = db.query(Admission).all()
+    assert len(admissions) == 0
+
+    db.refresh(bed)
+    assert bed.status == "AVAILABLE"
+
+
+def test_generate_admission_number(db):
+    first_number = generate_admission_number(db)
+
+    assert first_number == "ADM-2026-000001"
+
+
+def test_generate_multiple_admission_numbers(db):
+    first_number = generate_admission_number(db)
+
+    first_admission = Admission(
+        admission_number=first_number,
+        patient_id=1,
+        ward_id=1,
+        bed_id=1,
+        source="A&E/Emergency",
+        reason_for_admission="Test admission",
+        admitted_by=1,
+    )
+
+    db.add(first_admission)
+    db.commit()
+
+    second_number = generate_admission_number(db)
+
+    assert first_number == "ADM-2026-000001"
+    assert second_number == "ADM-2026-000002"
+
+
+def test_admission_numbers_are_unique(db):
+    first_number = generate_admission_number(db)
+
+    first_admission = Admission(
+        admission_number=first_number,
+        patient_id=1,
+        ward_id=1,
+        bed_id=1,
+        source="A&E/Emergency",
+        reason_for_admission="First test admission",
+        admitted_by=1,
+    )
+
+    db.add(first_admission)
+    db.commit()
+
+    second_number = generate_admission_number(db)
+
+    second_admission = Admission(
+        admission_number=second_number,
+        patient_id=1,
+        ward_id=1,
+        bed_id=2,
+        source="Doctor's office/Clinic",
+        reason_for_admission="Second test admission",
+        admitted_by=1,
+    )
+
+    db.add(second_admission)
+    db.commit()
+
+    assert first_admission.admission_number != second_admission.admission_number
+    assert first_admission.admission_number == "ADM-2026-000001"
+    assert second_admission.admission_number == "ADM-2026-000002"

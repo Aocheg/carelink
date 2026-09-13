@@ -60,3 +60,37 @@ def test_find_duplicate_patient(db):
     assert duplicate is not None
     assert duplicate.full_name == "Duplicate Test Patient"
     assert duplicate.date_of_birth == patient_data.date_of_birth
+
+
+def test_generate_multiple_patient_numbers(db):
+    first_number = generate_patient_number(db)
+
+    first_patient = PatientCreate(
+        full_name="First Patient",
+        allergy_status="No known allergy",
+    )
+    create_patient(db, first_patient)
+
+    second_number = generate_patient_number(db)
+
+    assert first_number == "CL-000001"
+    assert second_number == "CL-000002"
+
+
+def test_patient_numbers_are_unique(db):
+    first_patient = PatientCreate(
+        full_name="First Unique Patient",
+        allergy_status="No known allergy",
+    )
+
+    second_patient = PatientCreate(
+        full_name="Second Unique Patient",
+        allergy_status="No known allergy",
+    )
+
+    first = create_patient(db, first_patient)
+    second = create_patient(db, second_patient)
+
+    assert first.patient_number != second.patient_number
+    assert first.patient_number == "CL-000001"
+    assert second.patient_number == "CL-000002"

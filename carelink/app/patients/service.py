@@ -1,5 +1,6 @@
 from datetime import date
 from sqlalchemy import select, func
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.patients.models import Patient, NextOfKin
@@ -37,7 +38,17 @@ def create_patient(db: Session, patient_data):
     )
 
     db.add(patient)
-    db.commit()
+
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+
+        patient.patient_number = generate_patient_number(db)
+
+        db.add(patient)
+        db.commit()
+
     db.refresh(patient)
 
     return patient

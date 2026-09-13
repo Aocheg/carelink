@@ -106,24 +106,29 @@ def create_admission(
         status="ACTIVE",
     )
 
-    bed.status = "OCCUPIED"
-    db.add(admission)
+    try:
+        bed.status = "OCCUPIED"
+        db.add(admission)
 
-    db.flush()
+        db.flush()
 
-    create_audit_log(
-        db,
-        user_id=admission.admitted_by,
-        action="CREATE",
-        entity_type="ADMISSION",
-        entity_id=admission.id,
-        details=f"Admission {admission.admission_number} created"
-    )
+        create_audit_log(
+            db,
+            user_id=admission.admitted_by,
+            action="CREATE",
+            entity_type="ADMISSION",
+            entity_id=admission.id,
+            details=f"Admission {admission.admission_number} created"
+        )
 
-    db.commit()
-    db.refresh(admission)
+        db.commit()
+        db.refresh(admission)
 
-    return admission
+        return admission
+
+    except Exception:
+        db.rollback()
+        raise
 
 def get_admissions(db: Session):
     result = db.execute(
