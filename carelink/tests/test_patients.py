@@ -2,7 +2,8 @@ from app.patients.service import generate_patient_number
 from app.patients.service import create_patient
 from app.patients.schemas import PatientCreate
 from app.patients.service import find_duplicate_patient
-
+from app.audit.models import AuditLog
+from app.audit.service import create_audit_log
 
 def test_generate_patient_number(db):
     patient_number = generate_patient_number(db)
@@ -94,3 +95,33 @@ def test_patient_numbers_are_unique(db):
     assert first.patient_number != second.patient_number
     assert first.patient_number == "CL-000001"
     assert second.patient_number == "CL-000002"
+
+
+def test_create_patient_creates_audit_log(db):
+    patient_data = PatientCreate(
+        full_name="Audit Test Patient",
+        allergy_status="No known allergy",
+    )
+
+    patient = create_patient(db, patient_data)
+
+    create_audit_log(
+        db,
+        user_id=None,
+        action="CREATE",
+        entity_type="PATIENT",
+        entity_id=patient.id,
+        details=f"Patient {patient.patient_number} registered",
+    )
+
+    db.commit()
+
+    audit_log = db.query(AuditLog).filter(
+        AuditLog.entity_type == "PATIENT",
+        AuditLog.entity_id == patient.id,
+    ).first()
+
+    assert audit_log is not None
+    assert audit_log.action == "CREATE"
+
+

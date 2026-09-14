@@ -47,19 +47,26 @@ def create_patient_endpoint(patient: PatientCreate, db: Session = Depends(get_db
             detail="A patient with the same name and date of birth already exists"
         )
 
-    saved_patient = create_patient(db, patient)
-    
-    create_audit_log(
-        db,
-        user_id=None,
-        action="CREATE",
-        entity_type="PATIENT",
-        entity_id=saved_patient.id,
-        details=f"Patient {saved_patient.patient_number} registered"
-    )
+    try:
+        saved_patient = create_patient(db, patient)
 
-    return saved_patient
+        create_audit_log(
+            db,
+            user_id=None,
+            action="CREATE",
+            entity_type="PATIENT",
+            entity_id=saved_patient.id,
+            details=f"Patient {saved_patient.patient_number} registered"
+        )
 
+        db.commit()
+        db.refresh(saved_patient)
+
+        return saved_patient
+
+    except Exception:
+        db.rollback()
+        raise
 
 @router.get("/", response_model=list[PatientResponse])
 def get_patients_endpoint(

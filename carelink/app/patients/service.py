@@ -40,14 +40,14 @@ def create_patient(db: Session, patient_data):
     db.add(patient)
 
     try:
-        db.commit()
+        db.flush()
     except IntegrityError:
         db.rollback()
 
         patient.patient_number = generate_patient_number(db)
 
         db.add(patient)
-        db.commit()
+        db.flush()
 
     db.refresh(patient)
 
