@@ -3,11 +3,16 @@ from sqlalchemy.orm import Session
 
 from app.database.connection import SessionLocal
 from app.medications.schemas import (
+    MedicationAdministrationCreate,
+    MedicationAdministrationResponse,
     MedicationOrderCreate,
     MedicationOrderResponse,
 )
 from app.medications.service import (
+    create_medication_administration,
     create_medication_order,
+    get_medication_administration_by_id,
+    get_medication_administrations_by_order,
     get_medication_order_by_id,
     get_medication_orders_by_admission,
 )
@@ -62,6 +67,71 @@ def get_medication_orders_by_admission_endpoint(
         return get_medication_orders_by_admission(
             db,
             admission_id,
+        )
+
+    except ValueError as error:
+        raise HTTPException(
+            status_code=404,
+            detail=str(error),
+        )
+
+
+@router.post(
+    "/administrations",
+    response_model=MedicationAdministrationResponse,
+    status_code=201,
+)
+def create_medication_administration_endpoint(
+    administration: MedicationAdministrationCreate,
+    db: Session = Depends(get_db),
+):
+    try:
+        return create_medication_administration(
+            db,
+            administration,
+        )
+
+    except ValueError as error:
+        raise HTTPException(
+            status_code=400,
+            detail=str(error),
+        )
+
+
+@router.get(
+    "/administrations/{administration_id}",
+    response_model=MedicationAdministrationResponse,
+)
+def get_medication_administration_endpoint(
+    administration_id: int,
+    db: Session = Depends(get_db),
+):
+    administration = get_medication_administration_by_id(
+        db,
+        administration_id,
+    )
+
+    if administration is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Medication administration not found",
+        )
+
+    return administration
+
+
+@router.get(
+    "/order/{medication_order_id}/administrations",
+    response_model=list[MedicationAdministrationResponse],
+)
+def get_medication_administrations_by_order_endpoint(
+    medication_order_id: int,
+    db: Session = Depends(get_db),
+):
+    try:
+        return get_medication_administrations_by_order(
+            db,
+            medication_order_id,
         )
 
     except ValueError as error:

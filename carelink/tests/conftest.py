@@ -10,7 +10,10 @@ from app.wards.models import Ward, Bed
 from app.users.models import User
 from app.admissions.models import Admission
 from app.audit.models import AuditLog
+from fastapi.testclient import TestClient
 
+from app.main import app
+from app.medications.routes import get_db
 
 @pytest.fixture
 def db():
@@ -35,3 +38,16 @@ def db():
     finally:
         session.close()
         Base.metadata.drop_all(bind=engine)
+
+
+@pytest.fixture
+def client(db):
+    def override_get_db():
+        yield db
+
+    app.dependency_overrides[get_db] = override_get_db
+
+    with TestClient(app) as test_client:
+        yield test_client
+
+    app.dependency_overrides.clear()
