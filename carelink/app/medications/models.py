@@ -9,9 +9,7 @@ from app.database.connection import Base
 class MedicationOrder(Base):
     __tablename__ = "medication_orders"
 
-    id: Mapped[int] = mapped_column(
-        primary_key=True
-    )
+    id: Mapped[int] = mapped_column(primary_key=True)
 
     admission_id: Mapped[int] = mapped_column(
         ForeignKey("admissions.id"),
@@ -63,6 +61,58 @@ class MedicationOrder(Base):
     )
 
     instructions: Mapped[str | None] = mapped_column(
+        Text,
+        nullable=True,
+    )
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        nullable=False,
+        default=lambda: datetime.now(timezone.utc),
+    )
+
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        nullable=False,
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
+    )
+
+
+class MedicationAdministration(Base):
+    __tablename__ = "medication_administrations"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+
+    medication_order_id: Mapped[int] = mapped_column(
+        ForeignKey("medication_orders.id"),
+        nullable=False,
+        index=True,
+    )
+
+    administered_by: Mapped[int] = mapped_column(
+        ForeignKey("users.id"),
+        nullable=False,
+        index=True,
+    )
+
+    administered_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        nullable=False,
+    )
+
+    status: Mapped[str] = mapped_column(
+        String(30),
+        nullable=False,
+        index=True,
+    )
+
+    not_administered_reason: Mapped[str | None] = mapped_column(
+        Text,
+        nullable=True,
+    )
+
+    notes: Mapped[str | None] = mapped_column(
         Text,
         nullable=True,
     )
