@@ -1,12 +1,6 @@
 from datetime import date, datetime, timezone
 
-from pydantic import (
-    BaseModel,
-    ConfigDict,
-    Field,
-    field_validator,
-    model_validator,
-)
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 
 class MedicationOrderCreate(BaseModel):
@@ -66,19 +60,22 @@ class MedicationOrderCreate(BaseModel):
     def validate_status(cls, value: str) -> str:
         value = value.strip().upper()
 
-        if value != "ACTIVE":
+        allowed_statuses = {
+            "ACTIVE",
+            "DISCONTINUED",
+            "COMPLETED",
+        }
+
+        if value not in allowed_statuses:
             raise ValueError(
-                "New medication orders must have status ACTIVE"
+                "status must be ACTIVE, DISCONTINUED, or COMPLETED"
             )
 
         return value
 
     @field_validator("instructions")
     @classmethod
-    def clean_instructions(
-        cls,
-        value: str | None,
-    ) -> str | None:
+    def clean_instructions(cls, value: str | None) -> str | None:
         if value is None:
             return None
 
@@ -88,10 +85,7 @@ class MedicationOrderCreate(BaseModel):
 
     @model_validator(mode="after")
     def validate_dates(self):
-        if (
-            self.end_date is not None
-            and self.end_date < self.start_date
-        ):
+        if self.end_date is not None and self.end_date < self.start_date:
             raise ValueError(
                 "end_date cannot be earlier than start_date"
             )
@@ -115,7 +109,6 @@ class MedicationOrderResponse(BaseModel):
     instructions: str | None
     created_at: datetime
     updated_at: datetime
-
 
 class MedicationAdministrationCreate(BaseModel):
     medication_order_id: int = Field(gt=0)
