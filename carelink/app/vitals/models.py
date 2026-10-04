@@ -41,7 +41,6 @@ class UTCDateTime(TypeDecorator):
 
         return value.astimezone(timezone.utc)
 
-
 class VitalSign(Base):
     __tablename__ = "vital_signs"
 
@@ -117,3 +116,4 @@ class VitalSign(Base):
         nullable=False,
         default=lambda: datetime.now(timezone.utc),
     )
+    
