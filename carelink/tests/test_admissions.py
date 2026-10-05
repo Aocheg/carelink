@@ -54,6 +54,7 @@ def test_create_admission(db):
         username="test.nurse",
         full_name="Test Nurse",
         role="NURSE",
+        password="TestPassword123",
     )
 
     admission_data = AdmissionCreate(
@@ -128,6 +129,7 @@ def test_cannot_admit_patient_to_occupied_bed(db):
         username="test.nurse",
         full_name="Test Nurse",
         role="NURSE",
+        password="TestPassword123",
     )
 
     first_admission = AdmissionCreate(
@@ -204,6 +206,7 @@ def test_cannot_use_bed_from_wrong_ward(db):
         username="wrong.ward.nurse",
         full_name="Wrong Ward Nurse",
         role="NURSE",
+        password="TestPassword123",
     )
 
     admission_data = AdmissionCreate(
@@ -252,6 +255,7 @@ def test_cannot_admit_nonexistent_patient(db):
         username="missing.patient.nurse",
         full_name="Missing Patient Nurse",
         role="NURSE",
+        password="TestPassword123",
     )
 
     admission_data = AdmissionCreate(

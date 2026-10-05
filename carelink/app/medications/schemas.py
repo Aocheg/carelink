@@ -62,13 +62,11 @@ class MedicationOrderCreate(BaseModel):
 
         allowed_statuses = {
             "ACTIVE",
-            "DISCONTINUED",
-            "COMPLETED",
         }
 
         if value not in allowed_statuses:
             raise ValueError(
-                "status must be ACTIVE, DISCONTINUED, or COMPLETED"
+                "New medication orders must have status ACTIVE"
             )
 
         return value

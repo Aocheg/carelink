@@ -5,7 +5,7 @@ class UserCreate(BaseModel):
     username: str
     full_name: str
     role: str
-
+    password: str
 
 class UserResponse(BaseModel):
     id: int
@@ -13,3 +13,7 @@ class UserResponse(BaseModel):
     full_name: str
     role: str
     is_active: bool
+
+class UserLogin(BaseModel):
+    username: str
+    password: str

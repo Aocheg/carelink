@@ -1,13 +1,18 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.database.connection import SessionLocal
-from app.users.schemas import UserCreate, UserResponse
+from app.users.schemas import (
+    UserCreate,
+    UserLogin,
+    UserResponse,
+)
 from app.users.service import (
+    authenticate_user,
     create_user,
     get_users,
 )
-
+from app.users.tokens import create_access_token
 
 router = APIRouter(
     prefix="/users",
@@ -38,6 +43,7 @@ def create_user_endpoint(
         user.username,
         user.full_name,
         user.role,
+        user.password,
     )
 
 
@@ -49,3 +55,33 @@ def get_users_endpoint(
     db: Session = Depends(get_db)
 ):
     return get_users(db)
+
+
+# ADD THE LOGIN ROUTE HERE
+@router.post("/login")
+def login(
+    user: UserLogin,
+    db: Session = Depends(get_db),
+):
+    authenticated_user = authenticate_user(
+        db,
+        user.username,
+        user.password,
+    )
+
+    if authenticated_user is None:
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid username or password",
+        )
+
+    access_token = create_access_token(
+        user_id=authenticated_user.id,
+        username=authenticated_user.username,
+        role=authenticated_user.role,
+    )
+
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+    }
