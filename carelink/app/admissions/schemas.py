@@ -17,6 +17,11 @@ class AdmissionCreate(BaseModel):
     admitted_by: int
 
 
+class AdmissionDischarge(BaseModel):
+    discharged_by: int
+    discharge_summary: str
+
+
 class AdmissionResponse(BaseModel):
     id: int
     admission_number: str
@@ -33,3 +38,6 @@ class AdmissionResponse(BaseModel):
     nursing_diagnosis: str | None
     admitted_by: int
     status: str
+    discharged_at: datetime | None = None
+    discharge_summary: str | None = None
+    discharged_by: int | None = None

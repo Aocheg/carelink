@@ -1,3 +1,4 @@
+from typing import Any
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -244,3 +245,59 @@ def get_medication_administrations_by_order(
     )
 
     return result.scalars().all()
+
+
+def discontinue_medication_order(
+    db: Session,
+    medication_order_id: int,
+    discontinue_data: Any = None,
+    discontinued_by: int | None = None,
+    reason: str | None = None,
+):
+    if discontinue_data is not None:
+        if hasattr(discontinue_data, "discontinued_by"):
+            discontinued_by = discontinue_data.discontinued_by
+            reason = discontinue_data.reason
+        elif isinstance(discontinue_data, int):
+            discontinued_by = discontinue_data
+
+    medication_order = db.get(MedicationOrder, medication_order_id)
+    if medication_order is None:
+        raise ValueError("Medication order not found")
+
+    if medication_order.status != "ACTIVE":
+        raise ValueError(f"Cannot discontinue order with status {medication_order.status}")
+
+    user = db.get(User, discontinued_by)
+    if user is None:
+        raise ValueError("Healthcare worker not found")
+
+    if not user.is_active:
+        raise ValueError("Healthcare worker is inactive")
+
+    if user.role not in ("DOCTOR", "ADMIN"):
+        raise ValueError(
+            f"User with role '{user.role}' cannot discontinue medication orders. Only DOCTOR or ADMIN can discontinue orders."
+        )
+
+    clean_reason = reason.strip() if reason else ""
+    if not clean_reason:
+        raise ValueError("Discontinuation reason cannot be empty")
+
+    medication_order.status = "DISCONTINUED"
+
+    try:
+        create_audit_log(
+            db,
+            user_id=discontinued_by,
+            action="DISCONTINUE",
+            entity_type="MEDICATION_ORDER",
+            entity_id=medication_order.id,
+            details=f"Order {medication_order.id} ({medication_order.medication_name}) discontinued: {clean_reason}",
+        )
+        db.commit()
+        db.refresh(medication_order)
+        return medication_order
+    except Exception:
+        db.rollback()
+        raise

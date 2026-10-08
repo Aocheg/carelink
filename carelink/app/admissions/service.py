@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+from typing import Any
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -156,3 +157,81 @@ def get_admission_by_id(
     )
 
     return result.scalar_one_or_none()
+
+
+def discharge_admission(
+    db: Session,
+    admission_id: int,
+    discharge_data: Any = None,
+    discharged_by: int | None = None,
+    discharge_summary: str | None = None,
+):
+    if discharge_data is not None:
+        if hasattr(discharge_data, "discharged_by"):
+            discharged_by = discharge_data.discharged_by
+            discharge_summary = discharge_data.discharge_summary
+        elif isinstance(discharge_data, int):
+            discharged_by = discharge_data
+
+    admission = db.get(Admission, admission_id)
+    if admission is None:
+        raise ValueError("Admission not found")
+
+    if admission.status != "ACTIVE":
+        raise ValueError(
+            f"Admission is already discharged or inactive (status: {admission.status}) and cannot be discharged"
+        )
+
+    discharging_user = db.get(User, discharged_by)
+    if discharging_user is None:
+        raise ValueError("Discharging healthcare worker not found")
+
+    if not discharging_user.is_active:
+        raise ValueError("Discharging healthcare worker is inactive")
+
+    if discharging_user.role not in ("DOCTOR", "ADMIN"):
+        raise ValueError(
+            f"User with role '{discharging_user.role}' cannot discharge patients. Only DOCTOR or ADMIN can discharge."
+        )
+
+    clean_summary = discharge_summary.strip() if discharge_summary else ""
+    if not clean_summary:
+        raise ValueError("Discharge summary cannot be empty")
+
+    admission.status = "DISCHARGED"
+    admission.discharged_at = datetime.now(timezone.utc)
+    admission.discharge_summary = clean_summary
+    admission.discharged_by = discharged_by
+
+    # Free the allocated bed so it becomes available for new admissions
+    bed = db.get(Bed, admission.bed_id)
+    if bed:
+        bed.status = "AVAILABLE"
+
+    try:
+        create_audit_log(
+            db,
+            user_id=discharged_by,
+            action="DISCHARGE",
+            entity_type="ADMISSION",
+            entity_id=admission.id,
+            details=f"Admission {admission.admission_number} discharged with summary",
+        )
+        db.commit()
+        db.refresh(admission)
+        return admission
+    except Exception:
+        db.rollback()
+        raise
+
+
+def get_admissions_by_patient(
+    db: Session,
+    patient_id: int,
+):
+    result = db.execute(
+        select(Admission)
+        .where(Admission.patient_id == patient_id)
+        .order_by(Admission.admitted_at.desc())
+    )
+    return result.scalars().all()

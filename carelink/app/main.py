@@ -11,7 +11,9 @@ from app.users.models import User
 from app.admissions.models import Admission
 from app.audit.models import AuditLog
 from app.vitals.models import VitalSign
-from app.medications.models import MedicationOrder
+from app.medications.models import MedicationOrder, MedicationAdministration
+from app.investigations.models import InvestigationOrder, InvestigationResult
+from app.clinical.models import ClinicalNote
 
 from app.patients.routes import router as patients_router
 from app.facilities.routes import router as facilities_router
@@ -20,6 +22,8 @@ from app.users.routes import router as users_router
 from app.admissions.routes import router as admissions_router
 from app.vitals.routes import router as vitals_router
 from app.medications.routes import router as medications_router
+from app.investigations.routes import router as investigations_router
+from app.clinical.routes import router as clinical_router
 
 
 # Create database tables that do not already exist.
@@ -52,3 +56,5 @@ app.include_router(users_router)
 app.include_router(admissions_router)
 app.include_router(vitals_router)
 app.include_router(medications_router)
+app.include_router(investigations_router)
+app.include_router(clinical_router)

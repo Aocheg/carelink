@@ -82,6 +82,24 @@ class Admission(Base):
         default="ACTIVE"
     )
 
+    discharged_at: Mapped[datetime | None] = mapped_column(
+        nullable=True,
+        default=None
+    )
+
+    discharge_summary: Mapped[str | None] = mapped_column(
+        String(2000),
+        nullable=True,
+        default=None
+    )
+
+    discharged_by: Mapped[int | None] = mapped_column(
+        ForeignKey("users.id"),
+        nullable=True,
+        default=None
+    )
+
+
     created_at: Mapped[datetime] = mapped_column(
         nullable=False,
         default=lambda: datetime.now(timezone.utc)

@@ -4,13 +4,16 @@ from sqlalchemy.orm import Session
 from app.database.connection import SessionLocal
 from app.admissions.schemas import (
     AdmissionCreate,
+    AdmissionDischarge,
     AdmissionResponse,
 )
 from app.admissions.service import (
     create_admission,
+    discharge_admission,
     get_admissions,
     get_admission_by_id,
 )
+
 
 
 router = APIRouter(
@@ -80,3 +83,26 @@ def get_admission_endpoint(
         )
 
     return admission
+
+
+@router.post(
+    "/{admission_id}/discharge",
+    response_model=AdmissionResponse,
+)
+def discharge_admission_endpoint(
+    admission_id: int,
+    discharge_data: AdmissionDischarge,
+    db: Session = Depends(get_db),
+):
+    try:
+        return discharge_admission(
+            db,
+            admission_id,
+            discharged_by=discharge_data.discharged_by,
+            discharge_summary=discharge_data.discharge_summary,
+        )
+    except ValueError as error:
+        raise HTTPException(
+            status_code=400,
+            detail=str(error),
+        )

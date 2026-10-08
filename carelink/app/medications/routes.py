@@ -6,16 +6,19 @@ from app.medications.schemas import (
     MedicationAdministrationCreate,
     MedicationAdministrationResponse,
     MedicationOrderCreate,
+    MedicationOrderDiscontinue,
     MedicationOrderResponse,
 )
 from app.medications.service import (
     create_medication_administration,
     create_medication_order,
+    discontinue_medication_order,
     get_medication_administration_by_id,
     get_medication_administrations_by_order,
     get_medication_order_by_id,
     get_medication_orders_by_admission,
 )
+
 
 
 router = APIRouter(
@@ -55,10 +58,34 @@ def create_medication_order_endpoint(
         )
 
 
+@router.post(
+    "/{medication_order_id}/discontinue",
+    response_model=MedicationOrderResponse,
+)
+def discontinue_medication_order_endpoint(
+    medication_order_id: int,
+    discontinue_data: MedicationOrderDiscontinue,
+    db: Session = Depends(get_db),
+):
+    try:
+        return discontinue_medication_order(
+            db,
+            medication_order_id,
+            discontinued_by=discontinue_data.discontinued_by,
+            reason=discontinue_data.reason,
+        )
+    except ValueError as error:
+        raise HTTPException(
+            status_code=400,
+            detail=str(error),
+        )
+
+
 @router.get(
     "/admission/{admission_id}",
     response_model=list[MedicationOrderResponse],
 )
+
 def get_medication_orders_by_admission_endpoint(
     admission_id: int,
     db: Session = Depends(get_db),
