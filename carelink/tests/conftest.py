@@ -13,6 +13,7 @@ from app.audit.models import AuditLog
 from fastapi.testclient import TestClient
 
 from app.main import app
+from app.database.connection import get_db as conn_get_db
 from app.users.routes import get_db as users_get_db
 from app.medications.routes import get_db as medications_get_db
 
@@ -46,8 +47,10 @@ def client(db):
     def override_get_db():
         yield db
 
+    app.dependency_overrides[conn_get_db] = override_get_db
     app.dependency_overrides[users_get_db] = override_get_db
     app.dependency_overrides[medications_get_db] = override_get_db
+
 
     with TestClient(app) as test_client:
         yield test_client

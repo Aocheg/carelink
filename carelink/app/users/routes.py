@@ -12,7 +12,10 @@ from app.users.service import (
     create_user,
     get_users,
 )
+from app.users.dependencies import get_current_user
+from app.users.models import User
 from app.users.tokens import create_access_token
+
 
 router = APIRouter(
     prefix="/users",
@@ -57,7 +60,18 @@ def get_users_endpoint(
     return get_users(db)
 
 
+@router.get(
+    "/me",
+    response_model=UserResponse,
+)
+def get_me(
+    current_user: User = Depends(get_current_user),
+):
+    return current_user
+
+
 # ADD THE LOGIN ROUTE HERE
+
 @router.post("/login")
 def login(
     user: UserLogin,

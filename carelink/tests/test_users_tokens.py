@@ -44,3 +44,25 @@ def test_expired_token_is_rejected():
 
     with pytest.raises(ValueError):
         decode_access_token(token)
+
+
+def test_token_signed_with_different_secret_is_rejected():
+    import jwt
+    from datetime import datetime, timezone, timedelta
+
+    now = datetime.now(timezone.utc)
+    foreign_payload = {
+        "sub": "2",
+        "username": "dr.stranger",
+        "role": "DOCTOR",
+        "iat": now,
+        "exp": now + timedelta(minutes=15),
+    }
+    foreign_token = jwt.encode(
+        foreign_payload,
+        "completely-different-unauthorized-secret-key-12345",
+        algorithm="HS256",
+    )
+
+    with pytest.raises(ValueError):
+        decode_access_token(foreign_token)
