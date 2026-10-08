@@ -66,7 +66,13 @@ def create_admission(
             "Admitting healthcare worker is inactive"
         )
 
+    if user.role not in ("NURSE", "DOCTOR", "ADMIN"):
+        raise ValueError(
+            f"User with role '{user.role}' cannot admit patients. Only NURSE, DOCTOR, or ADMIN can admit patients."
+        )
+
     if bed.ward_id != ward.id:
+
         raise ValueError(
             "Selected bed does not belong to selected ward"
         )

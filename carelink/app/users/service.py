@@ -2,6 +2,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.users.models import User
+from app.users.roles import validate_role
 from app.users.security import hash_password, verify_password
 
 def create_user(
@@ -11,14 +12,16 @@ def create_user(
     role: str,
     password: str,
 ):
+    normalized_role = validate_role(role)
     password_hash = hash_password(password)
 
     user = User(
         username=username,
         password_hash=password_hash,
         full_name=full_name,
-        role=role,
+        role=normalized_role,
     )
+
 
     db.add(user)
     db.commit()

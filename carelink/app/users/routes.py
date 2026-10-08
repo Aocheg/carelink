@@ -12,7 +12,7 @@ from app.users.service import (
     create_user,
     get_users,
 )
-from app.users.dependencies import get_current_user
+from app.users.dependencies import get_current_user, require_roles
 from app.users.models import User
 from app.users.tokens import create_access_token
 
@@ -55,9 +55,22 @@ def create_user_endpoint(
     response_model=list[UserResponse]
 )
 def get_users_endpoint(
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    admin_user: User = Depends(require_roles("ADMIN")),
 ):
     return get_users(db)
+
+
+@router.get(
+    "/roles",
+)
+def get_roles_endpoint():
+    from app.users.roles import ROLE_PERMISSIONS, SUPPORTED_ROLES
+    return {
+        "roles": sorted(SUPPORTED_ROLES),
+        "permissions": {k: sorted(v) for k, v in ROLE_PERMISSIONS.items()},
+    }
+
 
 
 @router.get(

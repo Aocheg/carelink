@@ -23,7 +23,13 @@ def create_vital_sign(db: Session, vital_data):
     if not user.is_active:
         raise ValueError("Recording healthcare worker is inactive")
 
+    if user.role not in ("NURSE", "DOCTOR", "ADMIN"):
+        raise ValueError(
+            f"User with role '{user.role}' cannot record vital signs. Only clinical staff (NURSE, DOCTOR, ADMIN) can record vitals."
+        )
+
     recorded_at = vital_data.recorded_at
+
 
     if recorded_at is None:
         recorded_at = datetime.now(timezone.utc)

@@ -37,7 +37,13 @@ def create_medication_order(
             "Prescribing healthcare worker is inactive"
         )
 
+    if user.role not in ("DOCTOR", "ADMIN"):
+        raise ValueError(
+            f"User with role '{user.role}' cannot prescribe medications. Only DOCTOR or ADMIN can prescribe."
+        )
+
     if medication_data.status != "ACTIVE":
+
         raise ValueError(
             "New medication orders must have status ACTIVE"
         )
@@ -151,7 +157,13 @@ def create_medication_administration(
             "Administering healthcare worker is inactive"
         )
 
+    if user.role not in ("NURSE", "DOCTOR", "ADMIN"):
+        raise ValueError(
+            f"User with role '{user.role}' cannot administer medications. Only NURSE, DOCTOR, or ADMIN can administer."
+        )
+
     administration = MedicationAdministration(
+
         medication_order_id=(
             administration_data.medication_order_id
         ),
