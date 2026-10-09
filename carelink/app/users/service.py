@@ -1,4 +1,5 @@
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.users.models import User
@@ -22,12 +23,14 @@ def create_user(
         role=normalized_role,
     )
 
-
-    db.add(user)
-    db.commit()
-    db.refresh(user)
-
-    return user
+    try:
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+        return user
+    except IntegrityError:
+        db.rollback()
+        raise ValueError(f"User with username '{username}' already exists")
 
 
 def get_users(db: Session):

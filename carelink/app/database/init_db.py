@@ -7,7 +7,9 @@ from app.users.models import User
 from app.admissions.models import Admission
 from app.audit.models import AuditLog
 from app.vitals.models import VitalSign
-from app.medications.models import MedicationOrder
+from app.medications.models import MedicationOrder, MedicationAdministration
+from app.investigations.models import InvestigationOrder, InvestigationResult
+from app.clinical.models import ClinicalNote
 
 
 Base.metadata.drop_all(bind=engine)

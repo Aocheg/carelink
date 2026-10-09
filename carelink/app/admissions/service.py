@@ -73,7 +73,6 @@ def create_admission(
         )
 
     if bed.ward_id != ward.id:
-
         raise ValueError(
             "Selected bed does not belong to selected ward"
         )
@@ -81,6 +80,17 @@ def create_admission(
     if bed.status != "AVAILABLE":
         raise ValueError(
             "Selected bed is not available"
+        )
+
+    active_stmt = select(Admission).where(
+        Admission.patient_id == admission_data.patient_id,
+        Admission.status == "ACTIVE",
+    )
+    existing_active = db.execute(active_stmt).scalars().first()
+    if existing_active:
+        raise ValueError(
+            f"Patient already has an active admission ({existing_active.admission_number}). "
+            "A patient cannot have multiple concurrent active admissions."
         )
 
     admission_number = generate_admission_number(db)
@@ -198,17 +208,17 @@ def discharge_admission(
     if not clean_summary:
         raise ValueError("Discharge summary cannot be empty")
 
-    admission.status = "DISCHARGED"
-    admission.discharged_at = datetime.now(timezone.utc)
-    admission.discharge_summary = clean_summary
-    admission.discharged_by = discharged_by
-
-    # Free the allocated bed so it becomes available for new admissions
-    bed = db.get(Bed, admission.bed_id)
-    if bed:
-        bed.status = "AVAILABLE"
-
     try:
+        admission.status = "DISCHARGED"
+        admission.discharged_at = datetime.now(timezone.utc)
+        admission.discharge_summary = clean_summary
+        admission.discharged_by = discharged_by
+
+        # Free the allocated bed so it becomes available for new admissions
+        bed = db.get(Bed, admission.bed_id)
+        if bed:
+            bed.status = "AVAILABLE"
+
         create_audit_log(
             db,
             user_id=discharged_by,
