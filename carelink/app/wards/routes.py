@@ -16,6 +16,7 @@ from app.wards.service import (
     create_bed,
     get_beds,
     get_beds_by_ward,
+    get_bed_by_id,
 )
 
 
@@ -136,3 +137,20 @@ def get_ward_beds_endpoint(
         )
 
     return get_beds_by_ward(db, ward_id)
+
+
+@router.get(
+    "/beds/{bed_id}",
+    response_model=BedResponse,
+)
+def get_bed_endpoint(
+    bed_id: int,
+    db: Session = Depends(get_db),
+):
+    bed = get_bed_by_id(db, bed_id)
+    if bed is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Bed not found",
+        )
+    return bed

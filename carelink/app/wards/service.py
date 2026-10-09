@@ -64,3 +64,10 @@ def get_beds_by_ward(db: Session, ward_id: int):
     )
 
     return result.scalars().all()
+
+
+def get_bed_by_id(
+    db: Session,
+    bed_id: int,
+):
+    return db.get(Bed, bed_id)

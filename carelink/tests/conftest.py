@@ -23,6 +23,7 @@ from app.wards.routes import get_db as wards_get_db
 from app.vitals.routes import get_db as vitals_get_db
 from app.investigations.routes import get_db as investigations_get_db
 from app.clinical.routes import get_db as clinical_get_db
+from app.audit.routes import get_db as audit_get_db
 
 @pytest.fixture
 def db():
@@ -64,6 +65,7 @@ def client(db):
     app.dependency_overrides[vitals_get_db] = override_get_db
     app.dependency_overrides[investigations_get_db] = override_get_db
     app.dependency_overrides[clinical_get_db] = override_get_db
+    app.dependency_overrides[audit_get_db] = override_get_db
 
     with TestClient(app) as test_client:
         yield test_client

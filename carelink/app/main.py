@@ -24,6 +24,7 @@ from app.vitals.routes import router as vitals_router
 from app.medications.routes import router as medications_router
 from app.investigations.routes import router as investigations_router
 from app.clinical.routes import router as clinical_router
+from app.audit.routes import router as audit_router
 
 
 # Create database tables that do not already exist.
@@ -58,3 +59,4 @@ app.include_router(vitals_router)
 app.include_router(medications_router)
 app.include_router(investigations_router)
 app.include_router(clinical_router)
+app.include_router(audit_router)
