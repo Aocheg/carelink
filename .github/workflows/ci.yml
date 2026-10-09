@@ -1,0 +1,127 @@
+name: CareLink CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  test-and-lint:
+    name: Unit, RBAC & Clinical Safety Tests (Python 3.12)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+          cache-dependency-path: "carelink/requirements.txt"
+
+      - name: Install Python Dependencies
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          pip install -r carelink/requirements.txt
+
+      - name: Verify Python Syntax & Bytecode Compilation
+        run: |
+          python -m compileall carelink/app carelink/tests
+
+      - name: Run Pytest Automated Test Suite (145 Tests)
+        working-directory: carelink
+        run: |
+          pytest -v --tb=short
+
+  postgres-integration:
+    name: PostgreSQL Migrations & Seeding Verification
+    runs-on: ubuntu-latest
+    needs: test-and-lint
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: carelink_test_db
+          POSTGRES_USER: carelink_test_user
+          POSTGRES_PASSWORD: carelink_test_secret
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+          cache-dependency-path: "carelink/requirements.txt"
+
+      - name: Install Python Dependencies
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          pip install -r carelink/requirements.txt
+
+      - name: Verify Alembic Migrations against PostgreSQL
+        working-directory: carelink
+        env:
+          DATABASE_URL: postgresql+psycopg://carelink_test_user:carelink_test_secret@localhost:5432/carelink_test_db
+        run: |
+          alembic upgrade head
+
+      - name: Verify Fictional Demo Seeder against PostgreSQL
+        working-directory: carelink
+        env:
+          DATABASE_URL: postgresql+psycopg://carelink_test_user:carelink_test_secret@localhost:5432/carelink_test_db
+        run: |
+          python -m app.database.seed
+          # Test idempotency - re-running must succeed without errors
+          python -m app.database.seed
+
+  docker-build-and-healthcheck:
+    name: Docker Container Build & Healthcheck
+    runs-on: ubuntu-latest
+    needs: test-and-lint
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: actions/setup-buildx-action@v3
+
+      - name: Build Docker Image
+        run: |
+          docker build -t carelink-backend:ci -f carelink/Dockerfile carelink/
+
+      - name: Run Container & Test Health Endpoint
+        run: |
+          docker run -d --name carelink-ci-test \
+            -p 8000:8000 \
+            -e DATABASE_URL=sqlite:///./carelink.db \
+            -e SEED_DEMO_DATA=true \
+            carelink-backend:ci
+
+          echo "Waiting for CareLink container to initialize..."
+          sleep 6
+
+          curl --fail --retry 10 --retry-connrefused --retry-delay 2 http://localhost:8000/health
+          echo "Container health check passed!"
+
+      - name: Inspect Container Logs
+        if: always()
+        run: |
+          docker logs carelink-ci-test || true

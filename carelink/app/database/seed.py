@@ -11,6 +11,7 @@ from app.admissions.service import create_admission
 from app.clinical.schemas import ClinicalNoteCreate
 from app.clinical.service import create_clinical_note
 from app.database.connection import Base, SessionLocal, engine
+from app.facilities.models import Facility
 from app.facilities.schemas import FacilityCreate
 from app.facilities.service import create_facility
 from app.investigations.schemas import InvestigationOrderCreate, InvestigationResultCreate
@@ -37,6 +38,11 @@ def seed_database(target_engine=None, drop_existing: bool = False) -> None:
     Session = sessionmaker(bind=used_engine, autocommit=False, autoflush=False)
     db = Session()
     try:
+        existing_facility = db.query(Facility).filter_by(name="CareLink Regional Medical Center").first()
+        if existing_facility and not drop_existing:
+            print("CareLink fictional demo data already present. Skipping seeder.")
+            return
+
         # 1. Facility
         facility = create_facility(
             db,

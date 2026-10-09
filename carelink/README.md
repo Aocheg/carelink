@@ -6,7 +6,9 @@
 [![Python](https://img.shields.io/badge/Python-3.12-blue.svg)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.141-009688.svg)](https://fastapi.tiangolo.com/)
 [![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy-2.0-red.svg)](https://www.sqlalchemy.org/)
-[![Alembic](https://img.shields.io/badge/Alembic-1.20-orange.svg)](https://alembic.sqlalchemy.org/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1.svg?logo=postgresql&logoColor=white)]()
+[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED.svg?logo=docker&logoColor=white)]()
+[![CI](https://github.com/Aocheg/carelink/actions/workflows/ci.yml/badge.svg)](https://github.com/Aocheg/carelink/actions)
 [![Tests](https://img.shields.io/badge/Tests-145%20Passing-brightgreen.svg)]()
 [![License](https://img.shields.io/badge/License-MIT-purple.svg)]()
 
@@ -118,28 +120,55 @@ CARELINK follows a **strict layered architecture** ensuring high cohesion and lo
 
 ## 5. Getting Started & Installation
 
-### Prerequisites
+You can run CARELINK either using **Docker & Docker Compose** (recommended for full PostgreSQL stack) or directly via a **Python Virtual Environment**.
+
+### Option A: One-Command Docker Compose (Recommended)
+
+Start the entire environment with **PostgreSQL 16**, automatic migrations, and optional fictional demo data:
+
+```bash
+git clone https://github.com/Aocheg/carelink.git
+cd carelink
+docker compose up --build
+```
+
+The application will be live at:
+- **Service API**: `http://localhost:8000`
+- **Interactive Swagger UI**: `http://localhost:8000/docs`
+- **ReDoc Documentation**: `http://localhost:8000/redoc`
+- **PostgreSQL Database**: Port `5432` (`carelink_db`)
+
+To stop the containers:
+```bash
+docker compose down
+```
+
+---
+
+### Option B: Local Python Virtual Environment
+
+#### Prerequisites
 - **Python 3.12+**
 - **Git**
 
-### Step 1: Clone the Repository
+#### Step 1: Clone the Repository
 ```bash
 git clone https://github.com/Aocheg/carelink.git
 cd carelink/carelink
 ```
 
-### Step 2: Create and Activate Virtual Environment
+#### Step 2: Create and Activate Virtual Environment
 ```bash
 python3 -m venv venv
 source venv/bin/activate
 ```
 
-### Step 3: Install Dependencies
+#### Step 3: Install Dependencies
 ```bash
 pip install -r requirements.txt
 ```
 
-### Step 4: Configure Environment Variables
+#### Step 4: Configure Environment Variables
 Copy the example environment configuration:
 ```bash
 cp .env.example .env
@@ -152,19 +181,19 @@ ACCESS_TOKEN_EXPIRE_MINUTES=30
 DATABASE_URL=sqlite:///./carelink.db
 ```
 
-### Step 5: Run Database Migrations
+#### Step 5: Run Database Migrations
 Initialize database tables with Alembic:
 ```bash
 alembic upgrade head
 ```
 
-### Step 6: Seed Fictional Demo Data (Optional)
+#### Step 6: Seed Fictional Demo Data (Optional)
 Populate the database with fictional healthcare staff, facilities, wards, patients, and clinical records:
 ```bash
 python -m app.database.seed
 ```
 
-### Step 7: Launch the Application
+#### Step 7: Launch the Application
 Start the Uvicorn development server:
 ```bash
 uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
@@ -254,8 +283,13 @@ pytest -v
 - `tests/test_users_security.py` & `test_users_tokens.py`: PBKDF2 hashing and JWT token handling.
 - `tests/test_users_rbac.py`: Role-based permission enforcement and anti-spoofing tests.
 - `tests/test_clinical_workflows.py`: Handover summaries, timeline sorting, investigations, and NEWS2 calculation.
-- `tests/test_database_integrity.py`: Foreign key constraints, unique constraints, atomicity, and fresh database seeding.
 - `tests/test_integration_patient_journey.py`: Full patient journey from emergency admission to discharge.
+
+### CI/CD Pipeline (GitHub Actions):
+The project includes an automated continuous integration pipeline configured at `.github/workflows/ci.yml`:
+- **Automated Test Matrix**: Executes all 145 unit, security, and clinical safety tests under Python 3.12.
+- **PostgreSQL Live Service Verification**: Spawns a dedicated PostgreSQL 16 container, applies Alembic database migrations from scratch, and validates idempotent demo data seeding.
+- **Docker Image Build & Probe**: Builds the container image via Docker Buildx, launches the container, and verifies HTTP 200 health responses from `GET /health`.
 
 ---
 
