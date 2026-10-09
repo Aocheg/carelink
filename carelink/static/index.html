@@ -1,0 +1,1453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CareLink - Clinical Continuity & Patient Safety Platform</title>
+  
+  <!-- Tailwind CSS & Inter Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'sans-serif'] },
+          colors: {
+            brand: {
+              50: '#f0fdfa',
+              100: '#ccfbf1',
+              500: '#14b8a6',
+              600: '#0d9488',
+              700: '#0f766e',
+              800: '#115e59',
+              900: '#134e4a',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons & Chart.js -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .badge-alert-high { background-color: #fee2e2; color: #b91c1c; border: 1px solid #f87171; }
+    .badge-alert-med { background-color: #ffedd5; color: #c2410c; border: 1px solid #fb923c; }
+    .badge-alert-low { background-color: #f0fdf4; color: #15803d; border: 1px solid #86efac; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+  <!-- Top Navigation & Clinical Header -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        
+        <!-- Brand & Facility -->
+        <div class="flex items-center space-x-3">
+          <div class="h-10 w-10 rounded-xl bg-gradient-to-tr from-teal-600 to-cyan-500 flex items-center justify-center text-white shadow-md shadow-teal-500/20">
+            <i data-lucide="activity" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <div class="flex items-center space-x-2">
+              <span class="font-extrabold text-xl tracking-tight text-slate-900">CARELINK</span>
+              <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-teal-100 text-teal-800">
+                v0.1.0
+              </span>
+            </div>
+            <p class="text-xs text-slate-500 font-medium">CareLink Regional Medical Center &bull; Inpatient Services</p>
+          </div>
+        </div>
+
+        <!-- Quick Demo Role Switcher & User Profile -->
+        <div class="flex items-center space-x-3">
+          <div class="hidden md:flex items-center bg-slate-100 p-1 rounded-lg border border-slate-200">
+            <span class="text-xs font-semibold text-slate-500 px-2">Switch Role:</span>
+            <button onclick="switchRole('dr.adams', 'DoctorPassword123!')" class="px-2.5 py-1 text-xs font-medium rounded-md hover:bg-white text-slate-700 hover:shadow-xs transition">👨‍⚕️ Dr. Adams (Doctor)</button>
+            <button onclick="switchRole('nurse.baker', 'NursePassword123!')" class="px-2.5 py-1 text-xs font-medium rounded-md hover:bg-white text-slate-700 hover:shadow-xs transition">👩‍⚕️ Nurse Baker (Nurse)</button>
+            <button onclick="switchRole('pharm.clark', 'PharmPassword123!')" class="px-2.5 py-1 text-xs font-medium rounded-md hover:bg-white text-slate-700 hover:shadow-xs transition">💊 Pharm. Clark</button>
+            <button onclick="switchRole('admin', 'AdminPassword123!')" class="px-2.5 py-1 text-xs font-medium rounded-md hover:bg-white text-slate-700 hover:shadow-xs transition">🛡️ Admin</button>
+          </div>
+
+          <!-- Active User Badge -->
+          <div id="user-badge" class="flex items-center space-x-2 pl-2 border-l border-slate-200">
+            <div class="h-8 w-8 rounded-full bg-slate-200 flex items-center justify-center font-bold text-xs text-slate-700" id="user-avatar">
+              --
+            </div>
+            <div class="hidden sm:block text-left">
+              <div class="text-xs font-semibold text-slate-900" id="user-name">Not Signed In</div>
+              <div class="text-[10px] uppercase font-bold tracking-wider text-teal-700" id="user-role">GUEST</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-slate-100 flex space-x-8">
+      <button onclick="setTab('wards')" id="tab-btn-wards" class="tab-btn py-3 text-sm font-semibold border-b-2 border-teal-600 text-teal-700 flex items-center space-x-2">
+        <i data-lucide="layout-grid" class="w-4 h-4"></i>
+        <span>Ward Bed Management</span>
+      </button>
+      <button onclick="setTab('clinical')" id="tab-btn-clinical" class="tab-btn py-3 text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-800 flex items-center space-x-2">
+        <i data-lucide="heart-pulse" class="w-4 h-4"></i>
+        <span>Patient Safety & NEWS2</span>
+      </button>
+      <button onclick="setTab('handover')" id="tab-btn-handover" class="tab-btn py-3 text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-800 flex items-center space-x-2">
+        <i data-lucide="clipboard-check" class="w-4 h-4"></i>
+        <span>Shift Handover (SBAR)</span>
+      </button>
+      <button onclick="setTab('timeline')" id="tab-btn-timeline" class="tab-btn py-3 text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-800 flex items-center space-x-2">
+        <i data-lucide="git-commit" class="w-4 h-4"></i>
+        <span>Clinical Timeline</span>
+      </button>
+      <button onclick="setTab('patients')" id="tab-btn-patients" class="tab-btn py-3 text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-800 flex items-center space-x-2">
+        <i data-lucide="users" class="w-4 h-4"></i>
+        <span>Patients Directory</span>
+      </button>
+      <button onclick="setTab('audit')" id="tab-btn-audit" class="tab-btn py-3 text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-800 flex items-center space-x-2">
+        <i data-lucide="shield-alert" class="w-4 h-4"></i>
+        <span>Audit Logs</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Notification Banner -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 space-y-2 pointer-events-none"></div>
+
+  <!-- Main Content Body -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+    <!-- ======================================================== -->
+    <!-- TAB 1: WARD & BED OCCUPANCY MAP -->
+    <!-- ======================================================== -->
+    <section id="view-wards" class="space-y-6">
+      
+      <!-- Top Actions Bar -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
+        <div class="flex items-center space-x-4">
+          <label class="text-xs font-bold uppercase tracking-wider text-slate-500">Select Ward:</label>
+          <select id="ward-select" onchange="loadWardBeds()" class="bg-slate-50 border border-slate-300 text-slate-900 text-sm rounded-lg focus:ring-teal-500 focus:border-teal-500 p-2 font-medium">
+            <option value="">Loading wards...</option>
+          </select>
+        </div>
+        <div class="flex items-center space-x-3">
+          <button onclick="openAdmitModal()" class="inline-flex items-center px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white text-sm font-semibold rounded-lg shadow-xs transition">
+            <i data-lucide="user-plus" class="w-4 h-4 mr-2"></i>
+            Admit Patient
+          </button>
+          <button onclick="loadWardBeds()" class="p-2 text-slate-600 hover:bg-slate-100 rounded-lg border border-slate-200 transition" title="Refresh Beds">
+            <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Ward Stats Overview -->
+      <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex items-center justify-between">
+          <div>
+            <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Total Beds</p>
+            <p id="stat-total-beds" class="text-2xl font-bold text-slate-900">--</p>
+          </div>
+          <div class="p-3 bg-slate-100 rounded-lg text-slate-600">
+            <i data-lucide="bed" class="w-5 h-5"></i>
+          </div>
+        </div>
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex items-center justify-between">
+          <div>
+            <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Occupied</p>
+            <p id="stat-occupied-beds" class="text-2xl font-bold text-rose-600">--</p>
+          </div>
+          <div class="p-3 bg-rose-50 rounded-lg text-rose-600">
+            <i data-lucide="user-check" class="w-5 h-5"></i>
+          </div>
+        </div>
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex items-center justify-between">
+          <div>
+            <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Available</p>
+            <p id="stat-available-beds" class="text-2xl font-bold text-emerald-600">--</p>
+          </div>
+          <div class="p-3 bg-emerald-50 rounded-lg text-emerald-600">
+            <i data-lucide="check-circle" class="w-5 h-5"></i>
+          </div>
+        </div>
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex items-center justify-between">
+          <div>
+            <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Occupancy Rate</p>
+            <p id="stat-occupancy-rate" class="text-2xl font-bold text-teal-700">--%</p>
+          </div>
+          <div class="p-3 bg-teal-50 rounded-lg text-teal-700">
+            <i data-lucide="pie-chart" class="w-5 h-5"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- Beds Grid -->
+      <div>
+        <h2 class="text-base font-bold text-slate-900 mb-3 flex items-center">
+          <i data-lucide="layout" class="w-4 h-4 mr-2 text-teal-600"></i>
+          Ward Bed Matrix
+        </h2>
+        <div id="beds-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <!-- Dynamically populated bed cards -->
+          <div class="p-8 text-center text-slate-400 bg-white rounded-xl border border-slate-200 col-span-full">
+            Loading ward beds...
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ======================================================== -->
+    <!-- TAB 2: PATIENT SAFETY & NEWS2 CLINICAL MONITOR -->
+    <!-- ======================================================== -->
+    <section id="view-clinical" class="hidden space-y-6">
+
+      <!-- Patient Selection Bar -->
+      <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div class="flex items-center space-x-4">
+          <label class="text-xs font-bold uppercase tracking-wider text-slate-500">Active Admission:</label>
+          <select id="clinical-admission-select" onchange="loadClinicalPatientData()" class="bg-slate-50 border border-slate-300 text-slate-900 text-sm rounded-lg p-2 font-medium">
+            <option value="">Select an active admission...</option>
+          </select>
+        </div>
+        <div class="flex items-center space-x-2">
+          <button onclick="openVitalsModal()" class="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white text-sm font-semibold rounded-lg shadow-xs transition flex items-center">
+            <i data-lucide="plus-circle" class="w-4 h-4 mr-2"></i>
+            Record Vitals Observation
+          </button>
+          <button onclick="openNoteModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white text-sm font-semibold rounded-lg shadow-xs transition flex items-center">
+            <i data-lucide="file-plus" class="w-4 h-4 mr-2"></i>
+            Add Clinical Note
+          </button>
+        </div>
+      </div>
+
+      <!-- Safety Alert Banner (NEWS2 & Critical Red Flags) -->
+      <div id="safety-alert-container">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <!-- Patient Header & Demographic Info -->
+      <div id="patient-card-container">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <!-- Vital Trends Chart -->
+      <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-xs">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h3 class="text-base font-bold text-slate-900">Physiological Trends & Vital Signs Chart</h3>
+            <p class="text-xs text-slate-500">Time-series tracking of Heart Rate, BP, Respiratory Rate, and SpO2</p>
+          </div>
+          <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700">
+            <i data-lucide="trending-up" class="w-3.5 h-3.5 mr-1 text-teal-600"></i> Real-Time Feed
+          </span>
+        </div>
+        <div class="h-72 w-full">
+          <canvas id="vitalsChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Observation History Table -->
+      <div class="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
+        <div class="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50/50">
+          <h3 class="text-sm font-bold text-slate-900">Recorded Observations History</h3>
+          <span class="text-xs text-slate-500" id="vitals-count-label">0 observations</span>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs text-slate-600">
+            <thead class="bg-slate-50 text-slate-500 uppercase font-semibold border-b border-slate-200">
+              <tr>
+                <th class="px-4 py-3">Timestamp</th>
+                <th class="px-4 py-3">BP (mmHg)</th>
+                <th class="px-4 py-3">Heart Rate</th>
+                <th class="px-4 py-3">Resp. Rate</th>
+                <th class="px-4 py-3">SpO2 (%)</th>
+                <th class="px-4 py-3">Temp (°C)</th>
+                <th class="px-4 py-3">Oxygen Mode</th>
+                <th class="px-4 py-3">NEWS2</th>
+                <th class="px-4 py-3">Clinical Notes</th>
+              </tr>
+            </thead>
+            <tbody id="vitals-table-body" class="divide-y divide-slate-100 font-medium">
+              <tr>
+                <td colspan="9" class="px-4 py-6 text-center text-slate-400">Select an admission to inspect vital signs history.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ======================================================== -->
+    <!-- TAB 3: SHIFT HANDOVER HUB (SBAR) -->
+    <!-- ======================================================== -->
+    <section id="view-handover" class="hidden space-y-6">
+      <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div class="flex items-center space-x-4">
+          <label class="text-xs font-bold uppercase tracking-wider text-slate-500">Handover For:</label>
+          <select id="handover-admission-select" onchange="loadHandoverSummary()" class="bg-slate-50 border border-slate-300 text-slate-900 text-sm rounded-lg p-2 font-medium">
+            <option value="">Select an active admission...</option>
+          </select>
+        </div>
+        <button onclick="window.print()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold rounded-lg border border-slate-300 transition flex items-center">
+          <i data-lucide="printer" class="w-4 h-4 mr-2"></i>
+          Print SBAR Summary
+        </button>
+      </div>
+
+      <div id="handover-content-container">
+        <!-- Rendered dynamically -->
+      </div>
+    </section>
+
+    <!-- ======================================================== -->
+    <!-- TAB 4: CHRONOLOGICAL CLINICAL TIMELINE -->
+    <!-- ======================================================== -->
+    <section id="view-timeline" class="hidden space-y-6">
+      <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div class="flex items-center space-x-4">
+          <label class="text-xs font-bold uppercase tracking-wider text-slate-500">Patient Timeline:</label>
+          <select id="timeline-admission-select" onchange="loadClinicalTimeline()" class="bg-slate-50 border border-slate-300 text-slate-900 text-sm rounded-lg p-2 font-medium">
+            <option value="">Select an active admission...</option>
+          </select>
+        </div>
+        <button onclick="loadClinicalTimeline()" class="p-2 text-slate-600 hover:bg-slate-100 rounded-lg border border-slate-200 transition">
+          <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-xs">
+        <h3 class="text-base font-bold text-slate-900 mb-6 flex items-center">
+          <i data-lucide="clock" class="w-4 h-4 mr-2 text-teal-600"></i>
+          Immutable Chronological Event Stream
+        </h3>
+        <div id="timeline-events-container" class="relative pl-6 space-y-6 border-l-2 border-slate-200 ml-4">
+          <!-- Timeline events rendered dynamically -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================== -->
+    <!-- TAB 5: PATIENTS DIRECTORY -->
+    <!-- ======================================================== -->
+    <section id="view-patients" class="hidden space-y-6">
+      <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex items-center justify-between">
+        <h3 class="text-base font-bold text-slate-900">Registered Patient Directory</h3>
+        <button onclick="loadPatientsDirectory()" class="p-2 text-slate-600 hover:bg-slate-100 rounded-lg border border-slate-200 transition">
+          <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <div class="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs text-slate-600">
+            <thead class="bg-slate-50 text-slate-500 uppercase font-semibold border-b border-slate-200">
+              <tr>
+                <th class="px-4 py-3">Patient No.</th>
+                <th class="px-4 py-3">Full Name</th>
+                <th class="px-4 py-3">DOB / Sex</th>
+                <th class="px-4 py-3">Blood / Genotype</th>
+                <th class="px-4 py-3">Allergy Status</th>
+                <th class="px-4 py-3">Phone</th>
+                <th class="px-4 py-3">Registered Date</th>
+              </tr>
+            </thead>
+            <tbody id="patients-table-body" class="divide-y divide-slate-100 font-medium">
+              <!-- Populated dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================== -->
+    <!-- TAB 6: AUDIT LOGS (ADMIN ONLY) -->
+    <!-- ======================================================== -->
+    <section id="view-audit" class="hidden space-y-6">
+      <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex items-center justify-between">
+        <div>
+          <h3 class="text-base font-bold text-slate-900">System Clinical Audit Trail</h3>
+          <p class="text-xs text-slate-500">Immutable transaction logs (Protected: ADMIN role required)</p>
+        </div>
+        <button onclick="loadAuditLogs()" class="p-2 text-slate-600 hover:bg-slate-100 rounded-lg border border-slate-200 transition">
+          <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <div id="audit-logs-container" class="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
+        <!-- Rendered dynamically -->
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ======================================================== -->
+  <!-- MODAL: RECORD VITALS OBSERVATION -->
+  <!-- ======================================================== -->
+  <div id="modal-vitals" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <h3 class="text-base font-bold text-slate-900 flex items-center">
+          <i data-lucide="activity" class="w-5 h-5 mr-2 text-teal-600"></i>
+          Record Patient Observation Set
+        </h3>
+        <button onclick="closeModal('modal-vitals')" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+
+      <form id="form-vitals" onsubmit="submitVitals(event)" class="space-y-4 text-xs font-medium text-slate-700">
+        <input type="hidden" id="vital-admission-id" name="admission_id" />
+        
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-slate-600 mb-1">Systolic BP (mmHg)*</label>
+            <input type="number" id="v-systolic" required min="40" max="300" placeholder="120" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 font-semibold text-slate-900" />
+          </div>
+          <div>
+            <label class="block text-slate-600 mb-1">Diastolic BP (mmHg)*</label>
+            <input type="number" id="v-diastolic" required min="30" max="200" placeholder="80" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 font-semibold text-slate-900" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-slate-600 mb-1">Heart / Pulse Rate (bpm)*</label>
+            <input type="number" id="v-pulse" required min="20" max="250" placeholder="72" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 font-semibold text-slate-900" />
+          </div>
+          <div>
+            <label class="block text-slate-600 mb-1">Respiratory Rate (breaths/min)*</label>
+            <input type="number" id="v-resp" required min="5" max="60" placeholder="16" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 font-semibold text-slate-900" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-slate-600 mb-1">Temperature (°C)*</label>
+            <input type="number" step="0.1" id="v-temp" required min="30" max="45" placeholder="36.8" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 font-semibold text-slate-900" />
+          </div>
+          <div>
+            <label class="block text-slate-600 mb-1">Oxygen Saturation (SpO2 %)*</label>
+            <input type="number" step="0.1" id="v-spo2" required min="50" max="100" placeholder="98" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 font-semibold text-slate-900" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-slate-600 mb-1">Oxygen Delivery*</label>
+            <select id="v-oxygen" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 font-semibold text-slate-900">
+              <option value="false">Room Air (Scale 1)</option>
+              <option value="true">Supplemental Oxygen (Venturi/Nasal)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-slate-600 mb-1">Measurement Status*</label>
+            <select id="v-status" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 font-semibold text-slate-900">
+              <option value="COMPLETE">Complete</option>
+              <option value="PARTIAL">Partial</option>
+              <option value="REFUSED">Patient Refused</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-slate-600 mb-1">Clinical Observation Notes</label>
+          <textarea id="v-notes" rows="2" placeholder="e.g., Patient resting comfortably, good peripheral perfusion." class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 font-medium text-slate-900"></textarea>
+        </div>
+
+        <div class="flex items-center justify-end space-x-3 pt-3 border-t border-slate-100">
+          <button type="button" onclick="closeModal('modal-vitals')" class="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg font-semibold">Cancel</button>
+          <button type="submit" class="px-5 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg font-bold shadow-xs transition">Save Observation</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODAL: ADMIT PATIENT -->
+  <!-- ======================================================== -->
+  <div id="modal-admit" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <h3 class="text-base font-bold text-slate-900 flex items-center">
+          <i data-lucide="user-plus" class="w-5 h-5 mr-2 text-teal-600"></i>
+          New Inpatient Admission
+        </h3>
+        <button onclick="closeModal('modal-admit')" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+
+      <form id="form-admit" onsubmit="submitAdmit(event)" class="space-y-4 text-xs font-medium text-slate-700">
+        <div>
+          <label class="block text-slate-600 mb-1">Select Patient*</label>
+          <select id="admit-patient-select" required class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-slate-900 font-semibold">
+            <option value="">Select a patient...</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-slate-600 mb-1">Assign Available Bed*</label>
+          <select id="admit-bed-select" required class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-slate-900 font-semibold">
+            <option value="">Select an available bed...</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-slate-600 mb-1">Presenting Complaint & Diagnosis*</label>
+          <textarea id="admit-complaint" required rows="3" placeholder="e.g., Shortness of breath and fever, suspected Community-Acquired Pneumonia." class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 font-medium text-slate-900"></textarea>
+        </div>
+
+        <div class="flex items-center justify-end space-x-3 pt-3 border-t border-slate-100">
+          <button type="button" onclick="closeModal('modal-admit')" class="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg font-semibold">Cancel</button>
+          <button type="submit" class="px-5 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg font-bold shadow-xs transition">Confirm Admission</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODAL: DISCHARGE PATIENT -->
+  <!-- ======================================================== -->
+  <div id="modal-discharge" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <h3 class="text-base font-bold text-slate-900 flex items-center">
+          <i data-lucide="log-out" class="w-5 h-5 mr-2 text-rose-600"></i>
+          Discharge Patient & Free Bed
+        </h3>
+        <button onclick="closeModal('modal-discharge')" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+
+      <div class="p-3 bg-amber-50 border border-amber-200 rounded-lg text-amber-800 text-xs">
+        <i data-lucide="alert-triangle" class="w-4 h-4 inline mr-1"></i>
+        <strong>Clinical Authorization:</strong> Only attending medical officers (Doctors) can authorize hospital discharge. Bed will immediately transition back to <strong>AVAILABLE</strong>.
+      </div>
+
+      <form id="form-discharge" onsubmit="submitDischarge(event)" class="space-y-4 text-xs font-medium text-slate-700">
+        <input type="hidden" id="discharge-admission-id" />
+        
+        <div>
+          <label class="block text-slate-600 mb-1">Discharge Summary & Medical Plan*</label>
+          <textarea id="discharge-summary" required rows="4" placeholder="Document clinical resolution, discharge medications prescribed, follow-up instructions..." class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 font-medium text-slate-900"></textarea>
+        </div>
+
+        <div class="flex items-center justify-end space-x-3 pt-3 border-t border-slate-100">
+          <button type="button" onclick="closeModal('modal-discharge')" class="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg font-semibold">Cancel</button>
+          <button type="submit" class="px-5 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg font-bold shadow-xs transition">Authorize Discharge</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODAL: ADD CLINICAL NOTE -->
+  <!-- ======================================================== -->
+  <div id="modal-note" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <h3 class="text-base font-bold text-slate-900 flex items-center">
+          <i data-lucide="file-text" class="w-5 h-5 mr-2 text-teal-600"></i>
+          Add Clinical Note
+        </h3>
+        <button onclick="closeModal('modal-note')" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+
+      <form id="form-note" onsubmit="submitClinicalNote(event)" class="space-y-4 text-xs font-medium text-slate-700">
+        <input type="hidden" id="note-admission-id" />
+        
+        <div>
+          <label class="block text-slate-600 mb-1">Note Type*</label>
+          <select id="note-type" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-slate-900 font-semibold">
+            <option value="DOCTOR_REVIEW">Doctor Review (Medical Round)</option>
+            <option value="NURSING_ASSESSMENT">Nursing Assessment</option>
+            <option value="NURSING_NOTE">Nursing Shift Note</option>
+            <option value="HANDOVER_NOTE">Shift Handover Note</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-slate-600 mb-1">Clinical Findings & Review Content*</label>
+          <textarea id="note-content" required rows="3" placeholder="Document clinical findings, examination, and patient progress..." class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 font-medium text-slate-900"></textarea>
+        </div>
+
+        <div>
+          <label class="block text-slate-600 mb-1">Management Plan / Recommendations</label>
+          <textarea id="note-plan" rows="2" placeholder="e.g., Step down to oral antibiotics, repeat electrolytes in morning." class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 font-medium text-slate-900"></textarea>
+        </div>
+
+        <div class="flex items-center justify-end space-x-3 pt-3 border-t border-slate-100">
+          <button type="button" onclick="closeModal('modal-note')" class="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg font-semibold">Cancel</button>
+          <button type="submit" class="px-5 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg font-bold shadow-xs transition">Save Clinical Note</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- FRONTEND LOGIC & JAVASCRIPT APP -->
+  <!-- ======================================================== -->
+  <script>
+    const API_BASE = window.location.origin;
+    let authUser = null;
+    let authToken = localStorage.getItem('carelink_token') || null;
+    let currentWardId = null;
+    let currentAdmissionId = null;
+    let vitalsChartInstance = null;
+    let cachedPatients = [];
+    let cachedWards = [];
+    let cachedAdmissions = [];
+
+    // Helper: Toast notifications
+    function showToast(msg, type = 'success') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      const color = type === 'error' ? 'bg-rose-600 text-white' : type === 'warning' ? 'bg-amber-600 text-white' : 'bg-slate-900 text-white';
+      toast.className = `${color} px-4 py-2.5 rounded-xl shadow-lg text-xs font-semibold flex items-center space-x-2 transition-all duration-300 opacity-0 transform translate-y-2 pointer-events-auto`;
+      toast.innerHTML = `<span>${msg}</span>`;
+      container.appendChild(toast);
+      setTimeout(() => { toast.classList.remove('opacity-0', 'translate-y-2'); }, 10);
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.remove(), 300);
+      }, 4000);
+    }
+
+    // Modal controls
+    function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+    function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+    // Tab Navigation
+    function setTab(tab) {
+      ['wards', 'clinical', 'handover', 'timeline', 'patients', 'audit'].forEach(t => {
+        const view = document.getElementById(`view-${t}`);
+        const btn = document.getElementById(`tab-btn-${t}`);
+        if (t === tab) {
+          view.classList.remove('hidden');
+          btn.className = 'tab-btn py-3 text-sm font-semibold border-b-2 border-teal-600 text-teal-700 flex items-center space-x-2';
+        } else {
+          view.classList.add('hidden');
+          btn.className = 'tab-btn py-3 text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-800 flex items-center space-x-2';
+        }
+      });
+      lucide.createIcons();
+
+      if (tab === 'wards') loadWardBeds();
+      if (tab === 'clinical') loadClinicalPatientData();
+      if (tab === 'handover') loadHandoverSummary();
+      if (tab === 'timeline') loadClinicalTimeline();
+      if (tab === 'patients') loadPatientsDirectory();
+      if (tab === 'audit') loadAuditLogs();
+    }
+
+    // Authenticated API Fetch
+    async function apiRequest(endpoint, options = {}) {
+      const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
+      if (authToken) {
+        headers['Authorization'] = `Bearer ${authToken}`;
+      }
+      const response = await fetch(`${API_BASE}${endpoint}`, { ...options, headers });
+      if (response.status === 401) {
+        showToast('Session expired. Re-authenticating...', 'warning');
+        await switchRole('dr.adams', 'DoctorPassword123!');
+        return;
+      }
+      return response;
+    }
+
+    // Fast Role Switcher
+    async function switchRole(username, password) {
+      try {
+        const res = await fetch(`${API_BASE}/users/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+        if (!res.ok) throw new Error('Login failed');
+        const data = await res.json();
+        authToken = data.access_token;
+        localStorage.setItem('carelink_token', authToken);
+        await fetchCurrentUser();
+        showToast(`Signed in as ${authUser.full_name} (${authUser.role})`, 'success');
+      } catch (err) {
+        showToast(`Authentication error: ${err.message}`, 'error');
+      }
+    }
+
+    async function fetchCurrentUser() {
+      if (!authToken) return;
+      try {
+        const res = await apiRequest('/users/me');
+        if (res.ok) {
+          authUser = await res.json();
+          document.getElementById('user-name').innerText = authUser.full_name;
+          document.getElementById('user-role').innerText = authUser.role;
+          document.getElementById('user-avatar').innerText = authUser.username.slice(0, 2).toUpperCase();
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    // Load Wards & Populate Select
+    async function initWards() {
+      try {
+        const res = await apiRequest('/wards/');
+        if (!res.ok) return;
+        cachedWards = await res.json();
+        const select = document.getElementById('ward-select');
+        select.innerHTML = cachedWards.map(w => `<option value="${w.id}">${w.name}</option>`).join('');
+        if (cachedWards.length > 0) {
+          currentWardId = cachedWards[0].id;
+          await loadWardBeds();
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    // Load Beds for Selected Ward
+    async function loadWardBeds() {
+      const wardId = document.getElementById('ward-select').value || currentWardId;
+      if (!wardId) return;
+      currentWardId = wardId;
+      
+      try {
+        const [bedsRes, admissionsRes] = await Promise.all([
+          apiRequest(`/wards/${wardId}/beds`),
+          apiRequest('/admissions/')
+        ]);
+
+        const beds = await bedsRes.json();
+        cachedAdmissions = await admissionsRes.json();
+
+        // Stats calculation
+        const total = beds.length;
+        const occupied = beds.filter(b => b.status === 'OCCUPIED').length;
+        const available = total - occupied;
+        const rate = total > 0 ? Math.round((occupied / total) * 100) : 0;
+
+        document.getElementById('stat-total-beds').innerText = total;
+        document.getElementById('stat-occupied-beds').innerText = occupied;
+        document.getElementById('stat-available-beds').innerText = available;
+        document.getElementById('stat-occupancy-rate').innerText = `${rate}%`;
+
+        // Populate Admissions Selects across tabs
+        updateAdmissionSelects(cachedAdmissions.filter(a => a.status === 'ACTIVE'));
+
+        // Render Bed Matrix
+        const grid = document.getElementById('beds-grid');
+        if (beds.length === 0) {
+          grid.innerHTML = '<div class="col-span-full p-6 text-center text-slate-400 bg-white rounded-xl border border-slate-200">No beds configured for this ward.</div>';
+          return;
+        }
+
+        grid.innerHTML = beds.map(bed => {
+          const isOccupied = bed.status === 'OCCUPIED';
+          const activeAdm = cachedAdmissions.find(a => a.bed_id === bed.id && a.status === 'ACTIVE');
+
+          return `
+            <div class="bg-white rounded-xl border ${isOccupied ? 'border-rose-200 shadow-xs' : 'border-slate-200'} p-4 flex flex-col justify-between hover:shadow-md transition">
+              <div>
+                <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                  <div class="flex items-center space-x-2">
+                    <span class="font-bold text-sm text-slate-900">${bed.bed_number}</span>
+                    <span class="text-[11px] font-semibold px-2 py-0.5 rounded-full ${isOccupied ? 'bg-rose-100 text-rose-800' : 'bg-emerald-100 text-emerald-800'}">
+                      ${bed.status}
+                    </span>
+                  </div>
+                  <i data-lucide="${isOccupied ? 'user-check' : 'bed'}" class="w-4 h-4 ${isOccupied ? 'text-rose-500' : 'text-slate-400'}"></i>
+                </div>
+
+                ${isOccupied && activeAdm ? `
+                  <div class="py-3 space-y-1.5 text-xs">
+                    <div class="font-bold text-slate-900 text-sm">${activeAdm.patient ? activeAdm.patient.full_name : 'Patient #' + activeAdm.patient_id}</div>
+                    <div class="text-slate-500 font-mono text-[11px]">${activeAdm.admission_number}</div>
+                    <div class="text-slate-600 line-clamp-2 italic text-[11px]">"${activeAdm.presenting_complaint}"</div>
+                  </div>
+                ` : `
+                  <div class="py-6 text-center text-xs text-slate-400 font-medium">
+                    Bed is sanitized and ready for patient intake
+                  </div>
+                `}
+              </div>
+
+              <div class="pt-3 border-t border-slate-100 flex items-center justify-between">
+                ${isOccupied && activeAdm ? `
+                  <div class="flex items-center space-x-1">
+                    <button onclick="inspectAdmission(${activeAdm.id})" class="px-2.5 py-1.5 bg-teal-50 hover:bg-teal-100 text-teal-800 rounded-lg text-xs font-semibold transition" title="Inspect Clinical Chart">
+                      Chart & NEWS2
+                    </button>
+                    <button onclick="openVitalsForAdm(${activeAdm.id})" class="p-1.5 hover:bg-slate-100 text-slate-600 rounded-lg transition" title="Record Vitals">
+                      <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                    </button>
+                  </div>
+                  <button onclick="openDischargeModal(${activeAdm.id})" class="px-2.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-lg text-xs font-semibold transition" title="Discharge Patient">
+                    Discharge
+                  </button>
+                ` : `
+                  <button onclick="openAdmitForBed(${bed.id})" class="w-full py-2 bg-slate-50 hover:bg-teal-50 text-teal-700 border border-slate-200 hover:border-teal-300 rounded-lg text-xs font-semibold transition flex items-center justify-center">
+                    <i data-lucide="user-plus" class="w-3.5 h-3.5 mr-1.5"></i>
+                    Admit to ${bed.bed_number}
+                  </button>
+                `}
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        lucide.createIcons();
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    function updateAdmissionSelects(activeAdmissions) {
+      const options = activeAdmissions.map(a => 
+        `<option value="${a.id}">${a.admission_number} - ${a.patient ? a.patient.full_name : 'Patient #' + a.patient_id}</option>`
+      ).join('');
+
+      ['clinical-admission-select', 'handover-admission-select', 'timeline-admission-select'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.innerHTML = options || '<option value="">No active admissions</option>';
+          if (activeAdmissions.length > 0 && !currentAdmissionId) {
+            currentAdmissionId = activeAdmissions[0].id;
+            el.value = currentAdmissionId;
+          }
+        }
+      });
+    }
+
+    function inspectAdmission(admissionId) {
+      currentAdmissionId = admissionId;
+      document.getElementById('clinical-admission-select').value = admissionId;
+      setTab('clinical');
+    }
+
+    // Load Clinical Data (Patient Safety, NEWS2, Vitals Chart)
+    async function loadClinicalPatientData() {
+      const admissionId = document.getElementById('clinical-admission-select').value || currentAdmissionId;
+      if (!admissionId) return;
+      currentAdmissionId = admissionId;
+
+      try {
+        const [alertsRes, vitalsRes, admRes] = await Promise.all([
+          apiRequest(`/clinical/alerts/${admissionId}`),
+          apiRequest(`/vitals/admission/${admissionId}`),
+          apiRequest(`/admissions/${admissionId}`)
+        ]);
+
+        const alerts = alertsRes.ok ? await alertsRes.json() : null;
+        const vitals = vitalsRes.ok ? await vitalsRes.json() : [];
+        const adm = admRes.ok ? await admRes.json() : null;
+
+        // Render Safety Alert Banner
+        renderSafetyAlertBanner(alerts);
+
+        // Render Patient Demographics Card
+        renderPatientCard(adm);
+
+        // Render Vitals Chart
+        renderVitalsChart(vitals);
+
+        // Render Vitals Table
+        renderVitalsTable(vitals);
+
+        lucide.createIcons();
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    function renderSafetyAlertBanner(alerts) {
+      const container = document.getElementById('safety-alert-container');
+      if (!alerts) {
+        container.innerHTML = '';
+        return;
+      }
+
+      const score = alerts.news2_score;
+      const riskClass = score >= 7 ? 'bg-rose-50 border-rose-300 text-rose-900' : score >= 5 ? 'bg-amber-50 border-amber-300 text-amber-900' : 'bg-emerald-50 border-emerald-300 text-emerald-900';
+      const badgeClass = score >= 7 ? 'badge-alert-high' : score >= 5 ? 'badge-alert-med' : 'badge-alert-low';
+
+      container.innerHTML = `
+        <div class="rounded-xl border p-4 ${riskClass} shadow-xs">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div class="flex items-center space-x-3">
+              <div class="h-10 w-10 rounded-xl flex items-center justify-center font-black text-lg ${badgeClass}">
+                ${score}
+              </div>
+              <div>
+                <h4 class="font-bold text-sm tracking-tight flex items-center">
+                  National Early Warning Score (NEWS2): ${score} &bull; ${alerts.clinical_risk} RISK
+                </h4>
+                <p class="text-xs opacity-90">${alerts.recommendation}</p>
+              </div>
+            </div>
+            ${alerts.vital_alerts && alerts.vital_alerts.length > 0 ? `
+              <div class="flex flex-wrap gap-1.5">
+                ${alerts.vital_alerts.map(a => `
+                  <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold ${a.severity === 'CRITICAL' ? 'bg-rose-600 text-white' : 'bg-amber-600 text-white'}">
+                    <i data-lucide="alert-circle" class="w-3 h-3 mr-1"></i> ${a.parameter}: ${a.message}
+                  </span>
+                `).join('')}
+              </div>
+            ` : `
+              <span class="inline-flex items-center px-2.5 py-1 rounded text-xs font-semibold bg-emerald-100 text-emerald-800">
+                <i data-lucide="check" class="w-3.5 h-3.5 mr-1"></i> Vitals Within Safe Range
+              </span>
+            `}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderPatientCard(adm) {
+      const container = document.getElementById('patient-card-container');
+      if (!adm || !adm.patient) return;
+      const p = adm.patient;
+
+      container.innerHTML = `
+        <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-xs">
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+            <div>
+              <div class="flex items-center space-x-3">
+                <h2 class="text-xl font-black text-slate-900">${p.full_name}</h2>
+                <span class="text-xs font-mono font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded">${p.patient_number}</span>
+                <span class="text-xs font-mono font-semibold bg-teal-50 text-teal-700 px-2 py-0.5 rounded">${adm.admission_number}</span>
+              </div>
+              <p class="text-xs text-slate-500 mt-1">Presenting Complaint: <span class="font-semibold text-slate-800">${adm.presenting_complaint}</span></p>
+            </div>
+            
+            <!-- Allergy Alert -->
+            <div>
+              ${p.allergy_status && p.allergy_status !== 'NO_KNOWN_ALLERGIES' && p.allergy_status !== 'None' ? `
+                <div class="inline-flex items-center px-3 py-1.5 rounded-lg bg-rose-100 border border-rose-300 text-rose-800 text-xs font-bold shadow-xs">
+                  <i data-lucide="alert-octagon" class="w-4 h-4 mr-1.5 text-rose-600"></i>
+                  ALLERGIES: ${p.allergy_details || p.allergy_status}
+                </div>
+              ` : `
+                <div class="inline-flex items-center px-3 py-1.5 rounded-lg bg-slate-100 text-slate-600 text-xs font-semibold">
+                  <i data-lucide="shield-check" class="w-4 h-4 mr-1 text-slate-500"></i>
+                  NKDA (No Known Drug Allergies)
+                </div>
+              `}
+            </div>
+          </div>
+
+          <!-- Demographic details row -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3 pt-4 text-xs">
+            <div><span class="text-slate-400 block uppercase font-medium text-[10px]">Date of Birth</span><span class="font-bold text-slate-800">${p.date_of_birth || '--'}</span></div>
+            <div><span class="text-slate-400 block uppercase font-medium text-[10px]">Sex</span><span class="font-bold text-slate-800">${p.sex || '--'}</span></div>
+            <div><span class="text-slate-400 block uppercase font-medium text-[10px]">Blood Group</span><span class="font-bold text-slate-800">${p.blood_group || '--'}</span></div>
+            <div><span class="text-slate-400 block uppercase font-medium text-[10px]">Genotype</span><span class="font-bold text-slate-800">${p.genotype || '--'}</span></div>
+            <div><span class="text-slate-400 block uppercase font-medium text-[10px]">Bed Number</span><span class="font-bold text-teal-700">${adm.bed ? adm.bed.bed_number : '--'}</span></div>
+            <div><span class="text-slate-400 block uppercase font-medium text-[10px]">Admission Date</span><span class="font-bold text-slate-800">${new Date(adm.admission_date).toLocaleDateString()}</span></div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderVitalsChart(vitals) {
+      const ctx = document.getElementById('vitalsChart').getContext('2d');
+      if (vitalsChartInstance) {
+        vitalsChartInstance.destroy();
+      }
+
+      // Sort chronological
+      const sorted = [...vitals].sort((a, b) => new Date(a.recorded_at) - new Date(b.recorded_at));
+      const labels = sorted.map((v, i) => `#${i + 1} (${new Date(v.recorded_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})`);
+
+      vitalsChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels.length ? labels : ['No Data'],
+          datasets: [
+            { label: 'Pulse / Heart Rate (bpm)', data: sorted.map(v => v.pulse), borderColor: '#f43f5e', tension: 0.3 },
+            { label: 'Systolic BP (mmHg)', data: sorted.map(v => v.systolic_bp), borderColor: '#0ea5e9', tension: 0.3 },
+            { label: 'Diastolic BP (mmHg)', data: sorted.map(v => v.diastolic_bp), borderColor: '#38bdf8', borderDash: [4, 4], tension: 0.3 },
+            { label: 'SpO2 Oxygen (%)', data: sorted.map(v => v.spo2), borderColor: '#10b981', tension: 0.3 },
+            { label: 'Respiratory Rate (/min)', data: sorted.map(v => v.respiratory_rate), borderColor: '#a855f7', tension: 0.3 },
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          plugins: { legend: { position: 'top', labels: { boxWidth: 12, font: { size: 11 } } } },
+          scales: {
+            y: { grid: { color: '#f1f5f9' }, ticks: { font: { size: 10 } } },
+            x: { grid: { display: false }, ticks: { font: { size: 10 } } }
+          }
+        }
+      });
+    }
+
+    function renderVitalsTable(vitals) {
+      const tbody = document.getElementById('vitals-table-body');
+      document.getElementById('vitals-count-label').innerText = `${vitals.length} observations`;
+
+      if (!vitals.length) {
+        tbody.innerHTML = '<tr><td colspan="9" class="px-4 py-6 text-center text-slate-400">No observation records found for this admission.</td></tr>';
+        return;
+      }
+
+      const sorted = [...vitals].sort((a, b) => new Date(b.recorded_at) - new Date(a.recorded_at));
+      tbody.innerHTML = sorted.map(v => `
+        <tr class="hover:bg-slate-50/80">
+          <td class="px-4 py-3 font-mono text-[11px] text-slate-500">${new Date(v.recorded_at).toLocaleString()}</td>
+          <td class="px-4 py-3 font-bold ${v.systolic_bp < 90 || v.systolic_bp >= 180 ? 'text-rose-600' : 'text-slate-800'}">${v.systolic_bp}/${v.diastolic_bp}</td>
+          <td class="px-4 py-3 font-bold ${v.pulse < 45 || v.pulse > 130 ? 'text-rose-600' : 'text-slate-800'}">${v.pulse} bpm</td>
+          <td class="px-4 py-3 font-bold ${v.respiratory_rate < 9 || v.respiratory_rate > 25 ? 'text-rose-600' : 'text-slate-800'}">${v.respiratory_rate} /min</td>
+          <td class="px-4 py-3 font-bold ${v.spo2 < 92 ? 'text-rose-600' : 'text-emerald-700'}">${v.spo2}%</td>
+          <td class="px-4 py-3 font-bold ${v.temperature < 35 || v.temperature >= 38.5 ? 'text-rose-600' : 'text-slate-800'}">${v.temperature}°C</td>
+          <td class="px-4 py-3">${v.supplemental_oxygen ? '<span class="text-amber-700 font-bold">O2 Supp</span>' : 'Room Air'}</td>
+          <td class="px-4 py-3"><span class="px-2 py-0.5 rounded font-black text-xs ${v.news2_score >= 7 ? 'bg-rose-100 text-rose-800' : v.news2_score >= 5 ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}">${v.news2_score}</span></td>
+          <td class="px-4 py-3 text-slate-500 italic max-w-xs truncate">${v.notes || '--'}</td>
+        </tr>
+      `).join('');
+    }
+
+    // Load Handover Summary (SBAR Format)
+    async function loadHandoverSummary() {
+      const admissionId = document.getElementById('handover-admission-select').value || currentAdmissionId;
+      if (!admissionId) return;
+
+      try {
+        const res = await apiRequest(`/clinical/handover/${admissionId}`);
+        if (!res.ok) throw new Error('Handover retrieval failed');
+        const h = await res.json();
+        
+        const container = document.getElementById('handover-content-container');
+        container.innerHTML = `
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-6">
+            
+            <!-- Handover Header -->
+            <div class="flex items-center justify-between border-b border-slate-200 pb-4">
+              <div>
+                <span class="text-xs font-bold uppercase tracking-wider text-teal-700">Clinical Shift Handover (SBAR)</span>
+                <h2 class="text-2xl font-black text-slate-900">${h.patient_name} &bull; ${h.ward_name} (Bed: ${h.bed_number})</h2>
+                <p class="text-xs text-slate-500">Admission: ${h.admission_number} | Age: ${h.age} | Sex: ${h.sex} | Blood: ${h.blood_group || '--'}</p>
+              </div>
+              <div class="text-right">
+                <span class="inline-block px-3 py-1 rounded-full text-xs font-black ${h.news2_score >= 7 ? 'bg-rose-100 text-rose-800' : h.news2_score >= 5 ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}">
+                  NEWS2: ${h.news2_score} (${h.clinical_risk} Risk)
+                </span>
+                <div class="text-[11px] text-slate-400 mt-1">Generated: ${new Date(h.generated_at).toLocaleString()}</div>
+              </div>
+            </div>
+
+            <!-- Allergy Banner -->
+            ${h.allergy_status && h.allergy_status !== 'None' ? `
+              <div class="p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-900 text-xs font-bold flex items-center">
+                <i data-lucide="alert-octagon" class="w-4 h-4 mr-2 text-rose-600"></i>
+                Documented Allergies: ${h.allergy_status}
+              </div>
+            ` : ''}
+
+            <!-- SBAR Quadrants -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              
+              <!-- S: Situation & Background -->
+              <div class="space-y-4">
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                  <h4 class="text-xs font-bold uppercase tracking-wider text-teal-800 mb-2 flex items-center">
+                    <i data-lucide="info" class="w-4 h-4 mr-1.5"></i> 1. Situation & Presenting Problem
+                  </h4>
+                  <p class="text-xs font-semibold text-slate-800 leading-relaxed">${h.presenting_complaint}</p>
+                </div>
+
+                <!-- Latest Doctor Review -->
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                  <h4 class="text-xs font-bold uppercase tracking-wider text-teal-800 mb-2 flex items-center">
+                    <i data-lucide="stethoscope" class="w-4 h-4 mr-1.5"></i> 2. Latest Doctor Clinical Review
+                  </h4>
+                  ${h.latest_doctor_review ? `
+                    <div class="text-xs space-y-1.5">
+                      <p class="font-medium text-slate-700">${h.latest_doctor_review.content}</p>
+                      ${h.latest_doctor_review.plan ? `<p class="font-bold text-teal-900 bg-teal-50 p-2 rounded border border-teal-200">Plan: ${h.latest_doctor_review.plan}</p>` : ''}
+                      <p class="text-[10px] text-slate-400">Reviewed by Dr. on ${new Date(h.latest_doctor_review.created_at).toLocaleString()}</p>
+                    </div>
+                  ` : '<p class="text-xs text-slate-400 italic">No formal doctor review recorded.</p>'}
+                </div>
+              </div>
+
+              <!-- A & R: Active Regimen & Nursing Assessments -->
+              <div class="space-y-4">
+                
+                <!-- Active Medications -->
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                  <h4 class="text-xs font-bold uppercase tracking-wider text-teal-800 mb-2 flex items-center">
+                    <i data-lucide="pill" class="w-4 h-4 mr-1.5"></i> 3. Active Inpatient Medications
+                  </h4>
+                  ${h.active_medications && h.active_medications.length > 0 ? `
+                    <ul class="divide-y divide-slate-200 text-xs">
+                      ${h.active_medications.map(m => `
+                        <li class="py-1.5 flex justify-between items-center">
+                          <span class="font-bold text-slate-800">${m.name} <span class="font-normal text-slate-500">(${m.dose}, ${m.route}, ${m.frequency})</span></span>
+                          <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-teal-100 text-teal-800">ACTIVE</span>
+                        </li>
+                      `).join('')}
+                    </ul>
+                  ` : '<p class="text-xs text-slate-400 italic">No active prescriptions.</p>'}
+                </div>
+
+                <!-- Latest Nursing Notes -->
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                  <h4 class="text-xs font-bold uppercase tracking-wider text-teal-800 mb-2 flex items-center">
+                    <i data-lucide="file-check" class="w-4 h-4 mr-1.5"></i> 4. Nursing Assessment & Handover Plan
+                  </h4>
+                  ${h.latest_nursing_assessment ? `
+                    <div class="text-xs space-y-1">
+                      <p class="font-medium text-slate-700">${h.latest_nursing_assessment.content}</p>
+                      <p class="text-[10px] text-slate-400">Logged on ${new Date(h.latest_nursing_assessment.created_at).toLocaleString()}</p>
+                    </div>
+                  ` : '<p class="text-xs text-slate-400 italic">No nursing assessment logged.</p>'}
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+        `;
+        lucide.createIcons();
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    // Load Clinical Chronological Timeline
+    async function loadClinicalTimeline() {
+      const admissionId = document.getElementById('timeline-admission-select').value || currentAdmissionId;
+      if (!admissionId) return;
+
+      try {
+        const res = await apiRequest(`/clinical/timeline/${admissionId}`);
+        if (!res.ok) throw new Error('Timeline retrieval failed');
+        const events = await res.json();
+        
+        const container = document.getElementById('timeline-events-container');
+        if (!events.length) {
+          container.innerHTML = '<p class="text-xs text-slate-400 italic">No timeline events recorded.</p>';
+          return;
+        }
+
+        container.innerHTML = events.map(ev => {
+          let badgeColor = 'bg-teal-500';
+          let icon = 'activity';
+          if (ev.event_type === 'ADMISSION') { badgeColor = 'bg-blue-600'; icon = 'log-in'; }
+          if (ev.event_type === 'DISCHARGE') { badgeColor = 'bg-rose-600'; icon = 'log-out'; }
+          if (ev.event_type === 'DOCTOR_REVIEW') { badgeColor = 'bg-indigo-600'; icon = 'stethoscope'; }
+          if (ev.event_type === 'MEDICATION_ORDER') { badgeColor = 'bg-purple-600'; icon = 'pill'; }
+          if (ev.event_type === 'INVESTIGATION_ORDER') { badgeColor = 'bg-amber-600'; icon = 'test-tube'; }
+
+          return `
+            <div class="relative">
+              <div class="absolute -left-[31px] top-1.5 h-4 w-4 rounded-full ${badgeColor} ring-4 ring-white shadow-xs"></div>
+              <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200">
+                <div class="flex items-center justify-between text-xs mb-1">
+                  <span class="font-bold text-slate-800 uppercase tracking-wider text-[11px]">${ev.event_type.replace('_', ' ')}</span>
+                  <span class="font-mono text-slate-400 text-[10px]">${new Date(ev.timestamp).toLocaleString()}</span>
+                </div>
+                <p class="text-xs text-slate-600">${ev.summary}</p>
+              </div>
+            </div>
+          `;
+        }).join('');
+        lucide.createIcons();
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    // Load Patients Directory
+    async function loadPatientsDirectory() {
+      try {
+        const res = await apiRequest('/patients/');
+        if (!res.ok) return;
+        cachedPatients = await res.json();
+
+        const tbody = document.getElementById('patients-table-body');
+        if (!cachedPatients.length) {
+          tbody.innerHTML = '<tr><td colspan="7" class="px-4 py-6 text-center text-slate-400">No patients registered.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = cachedPatients.map(p => `
+          <tr class="hover:bg-slate-50/80">
+            <td class="px-4 py-3 font-mono font-bold text-teal-700">${p.patient_number}</td>
+            <td class="px-4 py-3 font-bold text-slate-900">${p.full_name}</td>
+            <td class="px-4 py-3">${p.date_of_birth || '--'} / ${p.sex || '--'}</td>
+            <td class="px-4 py-3">${p.blood_group || '--'} / ${p.genotype || '--'}</td>
+            <td class="px-4 py-3">
+              <span class="px-2 py-0.5 rounded text-[11px] font-semibold ${p.allergy_status && p.allergy_status !== 'None' ? 'bg-rose-100 text-rose-800' : 'bg-slate-100 text-slate-700'}">
+                ${p.allergy_details || p.allergy_status || 'None'}
+              </span>
+            </td>
+            <td class="px-4 py-3 text-slate-500">${p.phone_number || '--'}</td>
+            <td class="px-4 py-3 text-slate-400 font-mono text-[11px]">${new Date(p.created_at).toLocaleDateString()}</td>
+          </tr>
+        `).join('');
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    // Load Audit Logs (ADMIN role required)
+    async function loadAuditLogs() {
+      const container = document.getElementById('audit-logs-container');
+      try {
+        const res = await apiRequest('/audit/');
+        if (res.status === 403) {
+          container.innerHTML = `
+            <div class="p-8 text-center space-y-3">
+              <div class="inline-flex p-3 bg-rose-50 text-rose-600 rounded-full"><i data-lucide="shield-alert" class="w-6 h-6"></i></div>
+              <h4 class="font-bold text-slate-900">403 Forbidden: Admin Clearance Required</h4>
+              <p class="text-xs text-slate-500 max-w-sm mx-auto">Access to enterprise audit logs requires an ADMIN security role. Click '🛡️ Admin' in the top header to authenticate as Hospital Administrator.</p>
+            </div>
+          `;
+          lucide.createIcons();
+          return;
+        }
+
+        const logs = await res.json();
+        if (!logs.length) {
+          container.innerHTML = '<div class="p-6 text-center text-slate-400">No audit records found.</div>';
+          return;
+        }
+
+        container.innerHTML = `
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs text-slate-600">
+              <thead class="bg-slate-50 text-slate-500 uppercase font-semibold border-b border-slate-200">
+                <tr>
+                  <th class="px-4 py-3">Log ID</th>
+                  <th class="px-4 py-3">Timestamp</th>
+                  <th class="px-4 py-3">Action</th>
+                  <th class="px-4 py-3">Entity Type</th>
+                  <th class="px-4 py-3">Entity ID</th>
+                  <th class="px-4 py-3">User ID</th>
+                  <th class="px-4 py-3">Details</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100 font-medium">
+                ${logs.map(l => `
+                  <tr class="hover:bg-slate-50/80">
+                    <td class="px-4 py-3 font-mono text-slate-400">#${l.id}</td>
+                    <td class="px-4 py-3 font-mono text-[11px] text-slate-500">${new Date(l.created_at).toLocaleString()}</td>
+                    <td class="px-4 py-3"><span class="px-2 py-0.5 rounded font-bold text-[10px] bg-slate-100 text-slate-800">${l.action}</span></td>
+                    <td class="px-4 py-3 font-semibold text-slate-700">${l.entity_type}</td>
+                    <td class="px-4 py-3 font-mono">${l.entity_id || '--'}</td>
+                    <td class="px-4 py-3 font-mono text-teal-700">${l.user_id ? 'User #' + l.user_id : 'System'}</td>
+                    <td class="px-4 py-3 text-slate-600 truncate max-w-md">${l.details || '--'}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        `;
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    // Modal Triggers & Form Submissions
+    function openVitalsModal() {
+      const admId = document.getElementById('clinical-admission-select').value || currentAdmissionId;
+      if (!admId) {
+        showToast('Please select an active admission first', 'warning');
+        return;
+      }
+      openVitalsForAdm(admId);
+    }
+
+    function openVitalsForAdm(admId) {
+      document.getElementById('vital-admission-id').value = admId;
+      openModal('modal-vitals');
+    }
+
+    async function submitVitals(e) {
+      e.preventDefault();
+      const admId = parseInt(document.getElementById('vital-admission-id').value);
+      const payload = {
+        admission_id: admId,
+        recorded_by: authUser ? authUser.id : 1,
+        systolic_bp: parseInt(document.getElementById('v-systolic').value),
+        diastolic_bp: parseInt(document.getElementById('v-diastolic').value),
+        pulse: parseInt(document.getElementById('v-pulse').value),
+        respiratory_rate: parseInt(document.getElementById('v-resp').value),
+        temperature: parseFloat(document.getElementById('v-temp').value),
+        spo2: parseFloat(document.getElementById('v-spo2').value),
+        supplemental_oxygen: document.getElementById('v-oxygen').value === 'true',
+        measurement_status: document.getElementById('v-status').value,
+        notes: document.getElementById('v-notes').value || null
+      };
+
+      try {
+        const res = await apiRequest('/vitals/', {
+          method: 'POST',
+          body: JSON.stringify(payload)
+        });
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.detail || 'Failed to record vitals');
+        }
+        showToast('Vital signs observation recorded successfully', 'success');
+        closeModal('modal-vitals');
+        document.getElementById('form-vitals').reset();
+        await loadClinicalPatientData();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    async function openAdmitModal() {
+      // Fetch available beds and patients
+      await loadPatientsDirectory();
+      const admitPatSelect = document.getElementById('admit-patient-select');
+      admitPatSelect.innerHTML = cachedPatients.map(p => `<option value="${p.id}">${p.full_name} (${p.patient_number})</option>`).join('');
+
+      const wardId = document.getElementById('ward-select').value || currentWardId;
+      const bedsRes = await apiRequest(`/wards/${wardId}/beds`);
+      const beds = await bedsRes.json();
+      const availableBeds = beds.filter(b => b.status === 'AVAILABLE');
+
+      const admitBedSelect = document.getElementById('admit-bed-select');
+      admitBedSelect.innerHTML = availableBeds.map(b => `<option value="${b.id}">${b.bed_number}</option>`).join('');
+
+      if (!availableBeds.length) {
+        showToast('No available beds in this ward!', 'warning');
+        return;
+      }
+      openModal('modal-admit');
+    }
+
+    function openAdmitForBed(bedId) {
+      openAdmitModal();
+      setTimeout(() => {
+        const el = document.getElementById('admit-bed-select');
+        if (el) el.value = bedId;
+      }, 100);
+    }
+
+    async function submitAdmit(e) {
+      e.preventDefault();
+      const payload = {
+        patient_id: parseInt(document.getElementById('admit-patient-select').value),
+        bed_id: parseInt(document.getElementById('admit-bed-select').value),
+        presenting_complaint: document.getElementById('admit-complaint').value,
+        admitted_by: authUser ? authUser.id : 1
+      };
+
+      try {
+        const res = await apiRequest('/admissions/', {
+          method: 'POST',
+          body: JSON.stringify(payload)
+        });
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.detail || 'Admission failed');
+        }
+        const created = await res.json();
+        showToast(`Patient admitted successfully (${created.admission_number})`, 'success');
+        closeModal('modal-admit');
+        document.getElementById('form-admit').reset();
+        await loadWardBeds();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    function openDischargeModal(admId) {
+      document.getElementById('discharge-admission-id').value = admId;
+      openModal('modal-discharge');
+    }
+
+    async function submitDischarge(e) {
+      e.preventDefault();
+      const admId = parseInt(document.getElementById('discharge-admission-id').value);
+      const payload = {
+        discharged_by: authUser ? authUser.id : 1,
+        discharge_summary: document.getElementById('discharge-summary').value
+      };
+
+      try {
+        const res = await apiRequest(`/admissions/${admId}/discharge`, {
+          method: 'POST',
+          body: JSON.stringify(payload)
+        });
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.detail || 'Discharge authorization failed');
+        }
+        showToast('Patient discharged successfully. Bed freed.', 'success');
+        closeModal('modal-discharge');
+        document.getElementById('form-discharge').reset();
+        await loadWardBeds();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    function openNoteModal() {
+      const admId = document.getElementById('clinical-admission-select').value || currentAdmissionId;
+      if (!admId) {
+        showToast('Please select an active admission first', 'warning');
+        return;
+      }
+      document.getElementById('note-admission-id').value = admId;
+      openModal('modal-note');
+    }
+
+    async function submitClinicalNote(e) {
+      e.preventDefault();
+      const admId = parseInt(document.getElementById('note-admission-id').value);
+      const payload = {
+        admission_id: admId,
+        author_id: authUser ? authUser.id : 1,
+        note_type: document.getElementById('note-type').value,
+        content: document.getElementById('note-content').value,
+        plan: document.getElementById('note-plan').value || null
+      };
+
+      try {
+        const res = await apiRequest('/clinical/notes', {
+          method: 'POST',
+          body: JSON.stringify(payload)
+        });
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.detail || 'Failed to save clinical note');
+        }
+        showToast('Clinical note saved successfully', 'success');
+        closeModal('modal-note');
+        document.getElementById('form-note').reset();
+        await loadClinicalPatientData();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    // App Initialization
+    window.addEventListener('DOMContentLoaded', async () => {
+      lucide.createIcons();
+      // Auto-authenticate as Dr. Adams by default if no active session
+      if (!authToken) {
+        await switchRole('dr.adams', 'DoctorPassword123!');
+      } else {
+        await fetchCurrentUser();
+      }
+      await initWards();
+      await loadPatientsDirectory();
+    });
+  </script>
+
+</body>
+</html>

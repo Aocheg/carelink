@@ -9,7 +9,7 @@
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1.svg?logo=postgresql&logoColor=white)]()
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED.svg?logo=docker&logoColor=white)]()
 [![CI](https://github.com/Aocheg/carelink/actions/workflows/ci.yml/badge.svg)](https://github.com/Aocheg/carelink/actions)
-[![Tests](https://img.shields.io/badge/Tests-145%20Passing-brightgreen.svg)]()
+[![Tests](https://img.shields.io/badge/Tests-148%20Passing-brightgreen.svg)]()
 [![License](https://img.shields.io/badge/License-MIT-purple.svg)]()
 
 ---
@@ -263,7 +263,7 @@ curl -X POST "http://127.0.0.1:8000/admissions/1/discharge" \
 
 ## 8. Running Tests & Quality Verification
 
-CARELINK includes a comprehensive automated test suite consisting of **145 tests** spanning unit, security, RBAC, database integrity, and end-to-end integration workflows.
+CARELINK includes a comprehensive automated test suite consisting of **148 tests** spanning unit, security, RBAC, database integrity, end-to-end integration workflows, and web dashboard endpoints.
 
 To run the complete test suite:
 ```bash
@@ -284,10 +284,11 @@ pytest -v
 - `tests/test_users_rbac.py`: Role-based permission enforcement and anti-spoofing tests.
 - `tests/test_clinical_workflows.py`: Handover summaries, timeline sorting, investigations, and NEWS2 calculation.
 - `tests/test_integration_patient_journey.py`: Full patient journey from emergency admission to discharge.
+- `tests/test_dashboard.py`: Clinical web dashboard static mount, root route, and healthcheck verification.
 
 ### CI/CD Pipeline (GitHub Actions):
 The project includes an automated continuous integration pipeline configured at `.github/workflows/ci.yml`:
-- **Automated Test Matrix**: Executes all 145 unit, security, and clinical safety tests under Python 3.12.
+- **Automated Test Matrix**: Executes all 148 unit, security, and clinical safety tests under Python 3.12.
 - **PostgreSQL Live Service Verification**: Spawns a dedicated PostgreSQL 16 container, applies Alembic database migrations from scratch, and validates idempotent demo data seeding.
 - **Docker Image Build & Probe**: Builds the container image via Docker Buildx, launches the container, and verifies HTTP 200 health responses from `GET /health`.
 
