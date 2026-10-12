@@ -14,7 +14,7 @@
 
 ---
 
-## 1. Clinical Context & Project Vision
+## 1. Clinical Context & Project Vision.
 
 In inpatient hospital practice, communication failures and fragmented medical records during handovers and shift changes remain leading contributors to preventable patient deterioration. 
 
@@ -28,7 +28,7 @@ In inpatient hospital practice, communication failures and fragmented medical re
 
 ---
 
-## 2. Architecture & Design Principles
+## 2. Architecture & Design Principles.
 
 CARELINK follows a **strict layered architecture** ensuring high cohesion and low coupling:
 
@@ -69,7 +69,7 @@ CARELINK follows a **strict layered architecture** ensuring high cohesion and lo
 
 ---
 
-## 3. Supported Clinical Roles & Permissions
+## 3. Supported Clinical Roles & Permissions.
 
 | Role | Prescribe Meds | Record Vitals | Doctor Review | Nursing Notes | Lab Results | Discharge | View Audit Logs |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
@@ -302,5 +302,4 @@ The project includes an automated continuous integration pipeline configured at 
 ---
 
 ## 10. License
-
 This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
