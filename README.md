@@ -71,21 +71,28 @@ CARELINK follows a **strict layered architecture** ensuring high cohesion and lo
 
 ## 3. Supported Clinical Roles & Permissions.
 
+CareLink enforces a Zero-Trust Clinical Privilege Model aligned with hospital governance and statutory healthcare councils (MDCN, NMCN, PCN, MLSCN). Roles distinguish between direct clinical authoring/prescribing and vital read/audit access:
+
 | Role | Prescribe Meds | Record Vitals | Doctor Review | Nursing Notes | Lab Results | Discharge | View Audit Logs |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| **`ADMIN`** | Yes | Yes | Yes | Yes | Yes | Yes | **Yes** |
-| **`DOCTOR`** | **Yes** | Yes | **Yes** | Yes | Yes | **Yes** | No |
-| **`NURSE`** | No | **Yes** | No | **Yes** | No | No | No |
-| **`PHARMACIST`** | View | No | No | No | No | No | No |
-| **`LABORATORY_STAFF`** | No | No | No | No | **Yes** | No | No |
+| **`ADMIN`** | Yes *(Manage)* | Yes | Yes | Yes | Yes | Yes | **Yes** |
+| **`DOCTOR`** | **Yes** *(Prescribe & View)* | **Yes** *(Record & View)* | **Yes** *(Record & View)* | **Yes** *(View & Chart)* | **Yes** *(Order & View)* | **Yes** *(Authorize)* | No |
+| **`NURSE`** | **View** *(eMAR Administer)* | **Yes** *(Record & View)* | **View** *(Review Plans)* | **Yes** *(Chart & Notes)* | **View** *(Monitor Results)* | **View** *(Care Summary)* | No |
+| **`PHARMACIST`** | **View** *(Reconcile/Dispense)* | **View** *(Dosage Safety)* | **View** *(Clinical Rationale)* | **View** *(Med Monitoring)* | **View** *(Renal/Hepatic)* | **View** *(Discharge Meds)* | No |
+| **`LABORATORY_STAFF`** | No | **View** *(Baseline Correlation)*| **View** *(Clinical Indication)* | No | **Yes** *(Record & Flag)* | No | No |
 
 ---
 
-## 4. Key Clinical Modules
+## 4. Key Clinical Modules & Hospital Wards Coverage
 
-### 🏥 Admissions & Bed Management
-- Multi-ward and bed tracking (`app/wards/`).
-- Prevents concurrent active admissions for the same patient.
+### 🏥 Hospital-Wide Ward, Specialist Unit & Clinic Coverage
+CareLink models the full spectrum of inpatient services and clinical departments across tertiary and general hospitals:
+- **Inpatient Medical & Surgical**: Medical Ward (Male/Female Medical Wards), Surgical Ward (Pre/Post-Operative), Orthopedic & Trauma Ward.
+- **Critical Care & Emergency**: Intensive Care Unit (ICU), Cardiology & Coronary Care Unit (CCU), Accident & Emergency (A&E) Resuscitation Bay.
+- **Maternal, Neonatal & Pediatric**: Pediatric & Children's Emergency Ward (CHER), Special Care Baby Unit (SCBU) / NICU, Maternity & Obstetrics/Gynecology (O&G) Labor Ward.
+- **Specialty Units & Outpatient Clinics**: Eye Clinic & Ophthalmology Ward, Nephrology & Dialysis Unit, Oncology & Chemotherapy Unit, Psychiatric & Behavioral Health Ward, General Outpatient Department (GOPD) Observation Bays, Ear Nose & Throat (ENT) Clinic, Dental & Maxillofacial Day Unit.
+- Multi-ward and bed occupancy tracking (`app/wards/`).
+- Prevents concurrent active admissions for the same patient across all wards.
 - Automatically transitions assigned bed status to `OCCUPIED` on admission and frees it back to `AVAILABLE` on discharge.
 
 ### 🩺 Vital Signs & NEWS2 Early Warning System
@@ -294,10 +301,21 @@ The project includes an automated continuous integration pipeline configured at 
 
 ---
 
-## 9. Clinical Safety Disclaimer
+## 9. Clinical Safety, Regulatory Framework & Nigerian Health Sector Alignment
 
 > [!IMPORTANT]
-> **Academic & Portfolio Notice**: CARELINK is an educational software engineering portfolio project modeled after real-world hospital workflows. While designed with safety guardrails and deterministic clinical scoring algorithms (NEWS2), this software has **not** undergone medical device regulatory certification (such as FDA or CE-MDR) and is **not intended for direct clinical diagnostic or treatment use in live medical environments**. Real-world clinical deployment requires appropriate certification, institutional clinical governance, and rigorous clinical validation.
+> **Academic & Portfolio Notice**: CARELINK is an educational software engineering portfolio platform modeled after real-world hospital workflows and clinical governance tenets. While designed with safety guardrails, deterministic clinical scoring algorithms (NEWS2), and role-segregated boundaries, real-world live clinical deployment requires institutional clinical governance and regulatory onboarding.
+
+### Nigerian Healthcare Regulatory Alignment
+For deployment and piloting within the Nigerian healthcare ecosystem (Federal Teaching Hospitals, Federal Medical Centres, State Specialist Hospitals, and Private Health Facilities), CareLink is architected to align with:
+- **Nigeria Data Protection Act (NDPA 2023)**: Governed by the Nigeria Data Protection Commission (NDPC). Enforces strict data controller/processor principles, lawful processing of sensitive health records, role-based minimization, and encrypted storage.
+- **National Health Act (NHAct 2014)**: Section 26 to 29 guarantees patient confidentiality, access to health records, and statutory user consent mechanisms.
+- **Statutory Healthcare Professional Councils**:
+  - **Medical and Dental Council of Nigeria (MDCN)**: Ethical guidelines governing prescribing rights, patient reviews, and discharge authorizations.
+  - **Nursing and Midwifery Council of Nigeria (NMCN)**: Professional nursing process documentation, vital observation charts, and bedside medication administration.
+  - **Pharmacy Council of Nigeria (PCN)**: Drug dispensing accountability, prescription audit logs, and pharmacological reconciliation.
+  - **Medical Laboratory Science Council of Nigeria (MLSCN)**: Diagnostic verification standards, critical panic-value alerts, and quality control.
+- **National Health Insurance Authority (NHIA)**: Interoperability hooks for patient identification, eligibility, and clinical continuity across accredited providers.
 
 ---
 

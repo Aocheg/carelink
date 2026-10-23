@@ -109,6 +109,22 @@ def test_clinical_permissions_matrix():
     assert has_permission("ADMIN", "users:read") is True
     assert has_permission("NURSE", "users:read") is False
 
+    # Nurse view permissions (meds, doctor reviews, lab results, discharge)
+    assert has_permission("NURSE", "medications:read") is True
+    assert has_permission("NURSE", "clinical_notes:read") is True
+    assert has_permission("NURSE", "investigations:read") is True
+    assert has_permission("NURSE", "discharge:read") is True
+
+    # Pharmacist view permissions (meds, vitals, doctor reviews, investigations)
+    assert has_permission("PHARMACIST", "medications:read") is True
+    assert has_permission("PHARMACIST", "vitals:read") is True
+    assert has_permission("PHARMACIST", "clinical_notes:read") is True
+    assert has_permission("PHARMACIST", "investigations:read") is True
+
+    # Laboratory staff view permissions (vitals, doctor reviews)
+    assert has_permission("LABORATORY_STAFF", "vitals:read") is True
+    assert has_permission("LABORATORY_STAFF", "clinical_notes:read") is True
+
 
 # ==========================================
 # 3. require_roles Dependency Unit Tests

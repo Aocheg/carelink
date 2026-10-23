@@ -92,40 +92,53 @@ ROLE_PERMISSIONS: dict[str, set[str]] = {
         "vitals:read", "vitals:create",
         "medications:read", "medications:prescribe", "medications:administer",
         "investigations:read", "investigations:order", "investigations:record",
+        "clinical_notes:read", "clinical_notes:create",
+        "discharge:read", "discharge:authorize",
         "audit:read",
     },
     Role.DOCTOR.value: {
         # Patient care & admissions
         "patients:read", "patients:create", "patients:update",
         "admissions:read", "admissions:create", "admissions:update",
-        # Clinical assessments & prescriptions
+        # Clinical assessments, prescriptions & reviews
         "vitals:read", "vitals:create",
         "medications:read", "medications:prescribe", "medications:administer",
+        "clinical_notes:read", "clinical_notes:create",
         # Diagnostics
         "investigations:read", "investigations:order", "investigations:record",
+        # Discharge
+        "discharge:read", "discharge:authorize",
         "facilities:read", "wards:read",
     },
     Role.NURSE.value: {
-        # Bedside care & monitoring
+        # Bedside care, monitoring & administration
         "patients:read", "patients:create",
         "admissions:read", "admissions:create",
         "vitals:read", "vitals:create",
         "medications:read", "medications:administer",
+        "clinical_notes:read", "clinical_notes:create",
         "investigations:read",
+        "discharge:read",
         "facilities:read", "wards:read",
     },
     Role.PHARMACIST.value: {
-        # Medication reconciliation & dispensing
+        # Medication reconciliation, clinical evaluation & dispensing
         "patients:read",
         "admissions:read",
         "medications:read", "medications:dispense",
+        "vitals:read",
+        "clinical_notes:read",
+        "investigations:read",
+        "discharge:read",
         "facilities:read", "wards:read",
     },
     Role.LABORATORY_STAFF.value: {
-        # Diagnostic sample processing & results recording
+        # Diagnostic sample processing, clinical review correlation & results recording
         "patients:read",
         "admissions:read",
         "investigations:read", "investigations:record",
+        "vitals:read",
+        "clinical_notes:read",
         "facilities:read", "wards:read",
     },
     Role.LAB_TECH.value: {
@@ -133,6 +146,8 @@ ROLE_PERMISSIONS: dict[str, set[str]] = {
         "patients:read",
         "admissions:read",
         "investigations:read", "investigations:record",
+        "vitals:read",
+        "clinical_notes:read",
         "facilities:read", "wards:read",
     },
 }
