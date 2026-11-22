@@ -9,7 +9,7 @@
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1.svg?logo=postgresql&logoColor=white)]()
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED.svg?logo=docker&logoColor=white)]()
 [![CI](https://github.com/Aocheg/carelink/actions/workflows/ci.yml/badge.svg)](https://github.com/Aocheg/carelink/actions)
-[![Tests](https://img.shields.io/badge/Tests-148%20Passing-brightgreen.svg)]()
+[![Tests](https://img.shields.io/badge/Tests-156%20Passing-brightgreen.svg)]()
 [![License](https://img.shields.io/badge/License-MIT-purple.svg)]()
 
 ---
@@ -119,9 +119,11 @@ CareLink models the full spectrum of inpatient services and clinical departments
 - Structured shift handover summary endpoint (`GET /clinical/handover/{admission_id}`).
 - Unified chronological clinical timeline (`GET /clinical/timeline/{admission_id}`).
 
-### 🔒 Enterprise Audit Trail
+### 🔒 Enterprise Tamper-Evident Chained Audit Trail
 - System-wide audit logging for every major action: `CREATE`, `ORDER`, `RESULT`, `DISCONTINUE`, `DISCHARGE`.
-- Restricted admin query endpoint (`GET /audit/`).
+- **SHA-256 Cryptographic Hash Chaining**: Each audit row stores the `previous_hash` and generates an immutable `current_hash` over the timestamp, user ID, action, and payload, preventing retroactive database tampering.
+- **Forensic Verification Endpoint (`GET /audit/verify`)**: Cryptographically validates the entire ledger from Genesis block to latest entry, detecting broken chains or altered records in compliance with **NDPA 2023** and **HIPAA Security Rule**.
+- Restricted admin query and forensic endpoints (`GET /audit/` and `GET /audit/verify`).
 
 ---
 
@@ -270,7 +272,7 @@ curl -X POST "http://127.0.0.1:8000/admissions/1/discharge" \
 
 ## 8. Running Tests & Quality Verification
 
-CARELINK includes a comprehensive automated test suite consisting of **148 tests** spanning unit, security, RBAC, database integrity, end-to-end integration workflows, and web dashboard endpoints.
+CARELINK includes a comprehensive automated test suite consisting of **156 tests** spanning unit, security, RBAC, database integrity, tamper-evident SHA-256 audit chaining, end-to-end integration workflows, and web dashboard endpoints.
 
 To run the complete test suite:
 ```bash
@@ -283,6 +285,7 @@ pytest -v
 ```
 
 ### Test Suite Structure:
+- `tests/test_audit_chain.py`: Tamper-evident SHA-256 hash chaining, genesis block initialization, tamper detection, and admin verification endpoints.
 - `tests/test_patients.py`: Patient demographic validation and duplicate detection.
 - `tests/test_admissions.py`: Admission workflows, bed allocation, and constraints.
 - `tests/test_vitals.py` & `test_vitals_safety.py`: Observation validation and safety checks.
@@ -295,7 +298,7 @@ pytest -v
 
 ### CI/CD Pipeline (GitHub Actions):
 The project includes an automated continuous integration pipeline configured at `.github/workflows/ci.yml`:
-- **Automated Test Matrix**: Executes all 148 unit, security, and clinical safety tests under Python 3.12.
+- **Automated Test Matrix**: Executes all 156 unit, security, and clinical safety tests under Python 3.12.
 - **PostgreSQL Live Service Verification**: Spawns a dedicated PostgreSQL 16 container, applies Alembic database migrations from scratch, and validates idempotent demo data seeding.
 - **Docker Image Build & Probe**: Builds the container image via Docker Buildx, launches the container, and verifies HTTP 200 health responses from `GET /health`.
 

@@ -39,3 +39,15 @@ class AuditLog(Base):
         Text,
         nullable=True
     )
+
+    previous_hash: Mapped[str] = mapped_column(
+        String(64),
+        nullable=False,
+        default="0" * 64,
+    )
+
+    current_hash: Mapped[str] = mapped_column(
+        String(64),
+        nullable=False,
+        default="0" * 64,
+    )

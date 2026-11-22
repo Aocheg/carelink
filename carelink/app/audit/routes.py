@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from app.audit.schemas import AuditLogResponse
-from app.audit.service import get_audit_logs
+from app.audit.schemas import AuditLogResponse, AuditVerificationResponse
+from app.audit.service import get_audit_logs, verify_audit_trail
 from app.database.connection import SessionLocal
 from app.users.dependencies import require_roles
 from app.users.models import User
@@ -19,6 +19,23 @@ def get_db():
         yield db
     finally:
         db.close()
+
+
+@router.get(
+    "/verify",
+    response_model=AuditVerificationResponse,
+)
+def verify_audit_trail_endpoint(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_roles("ADMIN")),
+):
+    """
+    Forensic Verification Endpoint:
+    Cryptographically validates the complete SHA-256 chained audit ledger.
+    Detects any unauthorized modification, deletion, or back-dating of clinical records.
+    Restricted to system administrators (NDPA 2023 & statutory compliance).
+    """
+    return verify_audit_trail(db)
 
 
 @router.get(
