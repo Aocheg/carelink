@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
+from app.clinical.fhir import export_patient_fhir_bundle
 from app.clinical.schemas import (
     ClinicalNoteCreate,
     ClinicalNoteResponse,
@@ -15,6 +16,8 @@ from app.clinical.service import (
     get_unified_clinical_timeline,
 )
 from app.database.connection import SessionLocal
+from app.users.dependencies import require_roles
+from app.users.models import User
 
 router = APIRouter(
     prefix="/clinical",
@@ -97,5 +100,29 @@ def get_admission_alerts_endpoint(
 ):
     try:
         return get_admission_alerts(db, admission_id)
+    except ValueError as err:
+        raise HTTPException(status_code=404, detail=str(err))
+
+
+@router.get(
+    "/fhir/{patient_id}",
+)
+def get_patient_fhir_bundle_endpoint(
+    patient_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_roles("DOCTOR", "NURSE", "ADMIN")),
+):
+    """
+    HL7 FHIR Release 4 Export Gateway:
+    Serializes patient demographics, inpatient encounters, vital signs, and NEWS2 observations
+    into an international FHIR R4 JSON collection bundle using standard LOINC and UCUM codes.
+    Gated by Zero-Trust RBAC (DOCTOR, NURSE, ADMIN) and audited for statutory NDPA 2023 compliance.
+    """
+    try:
+        return export_patient_fhir_bundle(
+            db=db,
+            patient_id=patient_id,
+            requesting_user_id=current_user.id,
+        )
     except ValueError as err:
         raise HTTPException(status_code=404, detail=str(err))

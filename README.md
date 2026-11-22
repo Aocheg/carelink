@@ -9,7 +9,7 @@
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1.svg?logo=postgresql&logoColor=white)]()
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED.svg?logo=docker&logoColor=white)]()
 [![CI](https://github.com/Aocheg/carelink/actions/workflows/ci.yml/badge.svg)](https://github.com/Aocheg/carelink/actions)
-[![Tests](https://img.shields.io/badge/Tests-156%20Passing-brightgreen.svg)]()
+[![Tests](https://img.shields.io/badge/Tests-161%20Passing-brightgreen.svg)]()
 [![License](https://img.shields.io/badge/License-MIT-purple.svg)]()
 
 ---
@@ -24,6 +24,7 @@ In inpatient hospital practice, communication failures and fragmented medical re
 - **Shift Handover Summaries**: Single-call aggregated clinical snapshots delivering demographics, allergies, active medications, latest observations, NEWS2 scores, pending tests, and latest doctor/nursing reviews.
 - **Unified Chronological Timeline**: An immutable chronological audit stream tracking all patient events from admission to discharge.
 - **Bed Management & Discharge Lifecycle**: Automatic bed state tracking (`AVAILABLE` $\leftrightarrow$ `OCCUPIED`), duplicate active admission prevention, and clinical discharge summaries.
+- **HL7® FHIR® R4 Interoperability**: Standardized `GET /clinical/fhir/{patient_id}` endpoint exporting patient demographics, hospital encounters, and physiological observations coded in official LOINC and UCUM terminologies.
 - **Comprehensive Audit Trail**: Immutable logging across every administrative and clinical transaction.
 
 ---
@@ -272,7 +273,7 @@ curl -X POST "http://127.0.0.1:8000/admissions/1/discharge" \
 
 ## 8. Running Tests & Quality Verification
 
-CARELINK includes a comprehensive automated test suite consisting of **156 tests** spanning unit, security, RBAC, database integrity, tamper-evident SHA-256 audit chaining, end-to-end integration workflows, and web dashboard endpoints.
+CARELINK includes a comprehensive automated test suite consisting of **161 tests** spanning unit, security, RBAC, database integrity, tamper-evident SHA-256 audit chaining, HL7 FHIR R4 interoperability, end-to-end integration workflows, and web dashboard endpoints.
 
 To run the complete test suite:
 ```bash
@@ -286,6 +287,7 @@ pytest -v
 
 ### Test Suite Structure:
 - `tests/test_audit_chain.py`: Tamper-evident SHA-256 hash chaining, genesis block initialization, tamper detection, and admin verification endpoints.
+- `tests/test_clinical_fhir.py`: HL7 FHIR R4 Collection Bundle export, LOINC/UCUM clinical terminologies, and RBAC authorization.
 - `tests/test_patients.py`: Patient demographic validation and duplicate detection.
 - `tests/test_admissions.py`: Admission workflows, bed allocation, and constraints.
 - `tests/test_vitals.py` & `test_vitals_safety.py`: Observation validation and safety checks.
@@ -298,7 +300,7 @@ pytest -v
 
 ### CI/CD Pipeline (GitHub Actions):
 The project includes an automated continuous integration pipeline configured at `.github/workflows/ci.yml`:
-- **Automated Test Matrix**: Executes all 156 unit, security, and clinical safety tests under Python 3.12.
+- **Automated Test Matrix**: Executes all 161 unit, security, and clinical safety tests under Python 3.12.
 - **PostgreSQL Live Service Verification**: Spawns a dedicated PostgreSQL 16 container, applies Alembic database migrations from scratch, and validates idempotent demo data seeding.
 - **Docker Image Build & Probe**: Builds the container image via Docker Buildx, launches the container, and verifies HTTP 200 health responses from `GET /health`.
 
