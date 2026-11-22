@@ -34,7 +34,7 @@ jobs:
         run: |
           python -m compileall carelink/app carelink/tests
 
-      - name: Run Pytest Automated Test Suite (161 Tests)
+      - name: Run Pytest Automated Test Suite (165 Tests)
         working-directory: carelink
         run: |
           pytest -v --tb=short

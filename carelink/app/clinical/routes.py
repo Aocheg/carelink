@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.clinical.fhir import export_patient_fhir_bundle
+from app.clinical.watchdog import watchdog
 from app.clinical.schemas import (
     ClinicalNoteCreate,
     ClinicalNoteResponse,
@@ -126,3 +127,48 @@ def get_patient_fhir_bundle_endpoint(
         )
     except ValueError as err:
         raise HTTPException(status_code=404, detail=str(err))
+
+
+@router.post(
+    "/watchdog/scan",
+)
+def run_clinical_watchdog_scan_endpoint(
+    force_ignore_cooldown: bool = False,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_roles("DOCTOR", "NURSE", "ADMIN")),
+):
+    """
+    Triggers an in-process clinical safety watchdog scan across all active inpatient admissions.
+    Evaluates critical NEWS2 score deterioration, overdue STAT/URGENT investigations, and
+    shift handover gaps with anti-fatigue debounce caching and SHA-256 chained audit trails.
+    """
+    alerts = watchdog.scan_facility_safety(
+        db=db,
+        actor_id=current_user.id,
+        force_ignore_cooldown=force_ignore_cooldown,
+    )
+    return {
+        "status": "COMPLETED",
+        "alerts_triggered_count": len(alerts),
+        "alerts": alerts,
+    }
+
+
+@router.get(
+    "/watchdog/alerts",
+)
+def get_clinical_watchdog_alerts_endpoint(
+    current_user: User = Depends(require_roles("DOCTOR", "NURSE", "ADMIN")),
+):
+    """Returns currently active safety alerts tracked by the clinical watchdog."""
+    return watchdog.get_active_alerts()
+
+
+@router.get(
+    "/watchdog/status",
+)
+def get_clinical_watchdog_status_endpoint(
+    current_user: User = Depends(require_roles("DOCTOR", "NURSE", "ADMIN")),
+):
+    """Returns telemetry metrics and operational status for the clinical watchdog engine."""
+    return watchdog.get_status()
