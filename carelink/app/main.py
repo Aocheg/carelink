@@ -62,7 +62,14 @@ if os.path.isdir(static_dir):
 def serve_dashboard():
     index_path = os.path.join(static_dir, "index.html")
     if os.path.isfile(index_path):
-        return FileResponse(index_path)
+        return FileResponse(
+            index_path,
+            headers={
+                "Cache-Control": "no-cache, no-store, must-revalidate, max-age=0",
+                "Pragma": "no-cache",
+                "Expires": "0",
+            },
+        )
     return {
         "status": "healthy",
         "service": "CARELINK",

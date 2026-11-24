@@ -65,22 +65,16 @@
           </div>
         </div>
 
-        <!-- Authentication & User Profile Controls -->
+        <!-- Authentication & User Profile Controls in Header -->
         <div class="flex items-center space-x-3">
-          <!-- Logged Out State -->
-          <div id="auth-actions-logged-out" class="flex items-center space-x-2">
-            <button onclick="openLoginModal()" class="inline-flex items-center px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-teal-600 hover:bg-teal-700 text-white shadow-xs transition">
-              <i data-lucide="log-in" class="w-3.5 h-3.5 mr-1.5"></i>
-              Sign In
-            </button>
-            <button onclick="openRegisterModal()" class="inline-flex items-center px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 shadow-xs transition">
-              <i data-lucide="user-plus" class="w-3.5 h-3.5 mr-1.5"></i>
-              Create Account
-            </button>
+          <!-- Logged Out Indicator -->
+          <div id="header-logged-out" class="flex items-center space-x-2 text-xs font-semibold text-slate-500 bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200">
+            <i data-lucide="shield-check" class="w-3.5 h-3.5 text-teal-600"></i>
+            <span>Staff Authentication Required</span>
           </div>
 
-          <!-- Logged In State Profile Badge -->
-          <div id="auth-profile-logged-in" class="hidden flex items-center space-x-3">
+          <!-- Logged In State Profile Badge (NO role switching: sign out required to change user) -->
+          <div id="header-logged-in" class="hidden flex items-center space-x-3">
             <div class="flex items-center space-x-2.5 pl-2 border-l border-slate-200">
               <div class="h-9 w-9 rounded-full bg-teal-100 border border-teal-300 flex items-center justify-center font-bold text-xs text-teal-800 shadow-xs" id="user-avatar">
                 --
@@ -90,8 +84,9 @@
                 <div class="inline-block text-[10px] uppercase font-extrabold tracking-wider px-1.5 py-0.5 rounded" id="user-role-badge">GUEST</div>
               </div>
             </div>
-            <button onclick="logout()" class="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg border border-transparent hover:border-rose-200 transition" title="Sign Out">
-              <i data-lucide="log-out" class="w-4 h-4"></i>
+            <button onclick="logout()" class="inline-flex items-center px-3 py-1.5 text-xs font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-lg shadow-xs transition" title="Sign Out">
+              <i data-lucide="log-out" class="w-3.5 h-3.5 mr-1.5"></i>
+              Sign Out
             </button>
           </div>
         </div>
@@ -99,8 +94,8 @@
       </div>
     </div>
 
-    <!-- Navigation Tabs -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-slate-100 flex space-x-8">
+    <!-- Navigation Tabs (Strictly hidden until authenticated) -->
+    <div id="clinical-nav-tabs" class="hidden max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-slate-100 flex space-x-8">
       <button onclick="setTab('wards')" id="tab-btn-wards" class="tab-btn py-3 text-sm font-semibold border-b-2 border-teal-600 text-teal-700 flex items-center space-x-2">
         <i data-lucide="layout-grid" class="w-4 h-4"></i>
         <span>Ward Bed Management</span>
@@ -131,8 +126,180 @@
   <!-- Notification Banner -->
   <div id="toast-container" class="fixed bottom-5 right-5 z-50 space-y-2 pointer-events-none"></div>
 
-  <!-- Main Content Body -->
-  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+  <!-- ======================================================== -->
+  <!-- AUTHENTICATION GATEWAY: DISPLAYED WHEN NOT SIGNED IN -->
+  <!-- ======================================================== -->
+  <section id="auth-gateway" class="flex-1 flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8">
+    <div class="max-w-xl w-full bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
+      
+      <!-- Gateway Header Banner -->
+      <div class="p-6 bg-gradient-to-r from-teal-900 via-teal-800 to-cyan-900 text-white">
+        <div class="flex items-center space-x-3 mb-2">
+          <div class="h-11 w-11 rounded-xl bg-teal-500/20 border border-teal-400/30 flex items-center justify-center text-teal-300">
+            <i data-lucide="shield-check" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <h2 class="text-xl font-bold tracking-tight">CareLink Clinical Portal</h2>
+            <p class="text-xs text-teal-200">Electronic Health Record & Patient Continuity Platform</p>
+          </div>
+        </div>
+        <p class="text-xs text-teal-100/90 leading-relaxed pt-2 border-t border-teal-700/50">
+          Access is restricted to authorized hospital cadres. Sign in with your clinical credentials or register an account with your cadre to access your designated workspace.
+        </p>
+      </div>
+
+      <!-- Auth Toggle Buttons -->
+      <div class="flex border-b border-slate-200 bg-slate-50">
+        <button id="tab-auth-login" onclick="toggleAuthGatewayTab('login')" class="flex-1 py-3 text-xs font-bold text-center border-b-2 border-teal-600 text-teal-700 bg-white flex items-center justify-center space-x-2">
+          <i data-lucide="log-in" class="w-4 h-4"></i>
+          <span>Staff Sign In</span>
+        </button>
+        <button id="tab-auth-register" onclick="toggleAuthGatewayTab('register')" class="flex-1 py-3 text-xs font-semibold text-center border-b-2 border-transparent text-slate-500 hover:text-slate-800 flex items-center justify-center space-x-2">
+          <i data-lucide="user-plus" class="w-4 h-4"></i>
+          <span>Create Cadre Account</span>
+        </button>
+      </div>
+
+      <div class="p-6">
+        <!-- PANE 1: SIGN IN -->
+        <div id="pane-gateway-login" class="space-y-4">
+          <form id="form-gateway-login" onsubmit="handleGatewayLogin(event)" class="space-y-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Staff Username / User ID</label>
+              <div class="relative">
+                <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
+                  <i data-lucide="user" class="w-4 h-4"></i>
+                </span>
+                <input type="text" id="gateway-username" required placeholder="e.g. dr.adams or nurse.baker" class="w-full bg-slate-50 border border-slate-300 rounded-lg pl-9 pr-3 py-2.5 font-medium text-slate-900 text-sm focus:ring-teal-500 focus:border-teal-500">
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Password</label>
+              <div class="relative">
+                <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
+                  <i data-lucide="key-round" class="w-4 h-4"></i>
+                </span>
+                <input type="password" id="gateway-password" required placeholder="••••••••" class="w-full bg-slate-50 border border-slate-300 rounded-lg pl-9 pr-3 py-2.5 font-medium text-slate-900 text-sm focus:ring-teal-500 focus:border-teal-500">
+              </div>
+            </div>
+
+            <button type="submit" id="btn-gateway-login-submit" class="w-full py-2.5 px-4 bg-teal-600 hover:bg-teal-700 text-white font-bold text-sm rounded-lg shadow-md hover:shadow-lg transition flex items-center justify-center space-x-2">
+              <i data-lucide="lock-open" class="w-4 h-4"></i>
+              <span>Sign In & Unlock Workspace</span>
+            </button>
+          </form>
+
+          <!-- Pre-configured Cadre Test Profiles -->
+          <div class="mt-6 pt-5 border-t border-slate-200">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-bold text-slate-700 uppercase tracking-wider">Evaluation Test Credentials:</span>
+              <span class="text-[10px] text-slate-400">Click to fill form credentials</span>
+            </div>
+            <p class="text-[11px] text-slate-500 mb-3">
+              Each cadre below has its own distinct clinical permissions, tabs, and workflows:
+            </p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+              <button type="button" onclick="fillGatewayCredentials('dr.adams', 'DoctorPassword123!', 'Doctor')" class="text-left p-2.5 bg-blue-50/60 hover:bg-blue-100/80 border border-blue-200 rounded-lg transition">
+                <div class="font-bold text-blue-900 flex items-center justify-between">
+                  <span>👨‍⚕️ Dr. Adams</span>
+                  <span class="text-[10px] bg-blue-200 text-blue-800 font-extrabold px-1.5 py-0.5 rounded">DOCTOR</span>
+                </div>
+                <div class="text-[10px] text-blue-700 font-mono mt-0.5">ID: dr.adams</div>
+                <div class="text-[10px] text-slate-500 mt-1">NEWS2, Clinical Notes, Rx & Labs</div>
+              </button>
+
+              <button type="button" onclick="fillGatewayCredentials('nurse.baker', 'NursePassword123!', 'Nurse')" class="text-left p-2.5 bg-emerald-50/60 hover:bg-emerald-100/80 border border-emerald-200 rounded-lg transition">
+                <div class="font-bold text-emerald-900 flex items-center justify-between">
+                  <span>👩‍⚕️ Nurse Baker</span>
+                  <span class="text-[10px] bg-emerald-200 text-emerald-800 font-extrabold px-1.5 py-0.5 rounded">NURSE</span>
+                </div>
+                <div class="text-[10px] text-emerald-700 font-mono mt-0.5">ID: nurse.baker</div>
+                <div class="text-[10px] text-slate-500 mt-1">Ward Beds, Vitals, Shift Handover</div>
+              </button>
+
+              <button type="button" onclick="fillGatewayCredentials('pharm.clark', 'PharmPassword123!', 'Pharmacist')" class="text-left p-2.5 bg-purple-50/60 hover:bg-purple-100/80 border border-purple-200 rounded-lg transition">
+                <div class="font-bold text-purple-900 flex items-center justify-between">
+                  <span>💊 Pharm. Clark</span>
+                  <span class="text-[10px] bg-purple-200 text-purple-800 font-extrabold px-1.5 py-0.5 rounded">PHARMACIST</span>
+                </div>
+                <div class="text-[10px] text-purple-700 font-mono mt-0.5">ID: pharm.clark</div>
+                <div class="text-[10px] text-slate-500 mt-1">Prescriptions, Watchdog, Timeline</div>
+              </button>
+
+              <button type="button" onclick="fillGatewayCredentials('lab.davis', 'LabPassword123!', 'Lab Scientist')" class="text-left p-2.5 bg-indigo-50/60 hover:bg-indigo-100/80 border border-indigo-200 rounded-lg transition">
+                <div class="font-bold text-indigo-900 flex items-center justify-between">
+                  <span>🔬 MLS Davis</span>
+                  <span class="text-[10px] bg-indigo-200 text-indigo-800 font-extrabold px-1.5 py-0.5 rounded">LAB_TECH</span>
+                </div>
+                <div class="text-[10px] text-indigo-700 font-mono mt-0.5">ID: lab.davis</div>
+                <div class="text-[10px] text-slate-500 mt-1">Diagnostics, Lab Results, Timeline</div>
+              </button>
+
+              <button type="button" onclick="fillGatewayCredentials('admin', 'AdminPassword123!', 'Hospital Admin')" class="col-span-full text-left p-2.5 bg-rose-50/60 hover:bg-rose-100/80 border border-rose-200 rounded-lg transition">
+                <div class="font-bold text-rose-900 flex items-center justify-between">
+                  <span>🛡️ Hospital Administrator</span>
+                  <span class="text-[10px] bg-rose-200 text-rose-800 font-extrabold px-1.5 py-0.5 rounded">ADMIN</span>
+                </div>
+                <div class="text-[10px] text-rose-700 font-mono mt-0.5">ID: admin</div>
+                <div class="text-[10px] text-slate-500 mt-1">Governance, System Configuration, Cryptographic Audit Logs</div>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- PANE 2: REGISTER CADRE ACCOUNT -->
+        <div id="pane-gateway-register" class="hidden space-y-4">
+          <form id="form-gateway-register" onsubmit="handleGatewayRegister(event)" class="space-y-3.5">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Full Name & Professional Title</label>
+              <input type="text" id="reg-fullname" required placeholder="e.g. Dr. Oche Gabriel or Nurse Jane Doe" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 font-medium text-slate-900 text-sm focus:ring-teal-500 focus:border-teal-500">
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Staff Username / User ID</label>
+              <input type="text" id="reg-username" required placeholder="e.g. oche.gabriel" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 font-medium text-slate-900 text-sm focus:ring-teal-500 focus:border-teal-500">
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Clinical Cadre / Professional Role</label>
+              <select id="reg-role" required class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 font-medium text-slate-900 text-sm focus:ring-teal-500 focus:border-teal-500">
+                <option value="DOCTOR">👨‍⚕️ Medical Doctor (Physician / Surgeon)</option>
+                <option value="NURSE">👩‍⚕️ Registered Nurse (Inpatient Bedside & Vitals)</option>
+                <option value="PHARMACIST">💊 Clinical Pharmacist (Medication & Dispensing)</option>
+                <option value="LAB_TECH">🔬 Medical Laboratory Scientist (Diagnostics)</option>
+                <option value="ADMIN">🛡️ Hospital Administrator (Governance & Audit)</option>
+              </select>
+              <p class="text-[10px] text-slate-400 mt-1 font-normal">Your clinical workspace tabs and permissions are strictly bound to this cadre.</p>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Password</label>
+              <input type="password" id="reg-password" required minlength="8" placeholder="At least 8 characters" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 font-medium text-slate-900 text-sm focus:ring-teal-500 focus:border-teal-500">
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Confirm Password</label>
+              <input type="password" id="reg-confirm-password" required minlength="8" placeholder="Re-enter password" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 font-medium text-slate-900 text-sm focus:ring-teal-500 focus:border-teal-500">
+            </div>
+
+            <button type="submit" id="btn-gateway-register-submit" class="w-full py-2.5 px-4 bg-teal-600 hover:bg-teal-700 text-white font-bold text-sm rounded-lg shadow-md hover:shadow-lg transition flex items-center justify-center space-x-2">
+              <i data-lucide="user-check" class="w-4 h-4"></i>
+              <span>Create Account & Enter Workspace</span>
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================== -->
+  <!-- MAIN CLINICAL WORKSPACE (HIDDEN UNTIL AUTHENTICATED) -->
+  <!-- ======================================================== -->
+  <main id="app-workspace" class="hidden flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+    <!-- Active Cadre Banner -->
+    <div id="role-cadre-banner"></div>
 
     <!-- ======================================================== -->
     <!-- TAB 1: WARD & BED OCCUPANCY MAP -->
@@ -600,136 +767,6 @@
   </div>
 
   <!-- ======================================================== -->
-  <!-- MODAL: SIGN IN -->
-  <!-- ======================================================== -->
-  <div id="modal-login" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs hidden flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
-        <div class="flex items-center space-x-2.5">
-          <div class="h-9 w-9 rounded-xl bg-teal-50 border border-teal-200 flex items-center justify-center text-teal-700">
-            <i data-lucide="lock" class="w-5 h-5"></i>
-          </div>
-          <div>
-            <h3 class="text-base font-bold text-slate-900">Clinical Portal Sign In</h3>
-            <p class="text-xs text-slate-500">Sign in with your clinical credentials</p>
-          </div>
-        </div>
-        <button type="button" onclick="closeModal('modal-login')" class="text-slate-400 hover:text-slate-600">
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
-      </div>
-
-      <form id="form-login" onsubmit="handleLogin(event)" class="space-y-4 text-xs font-semibold">
-        <div>
-          <label class="block text-slate-700 mb-1">Username</label>
-          <div class="relative">
-            <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
-              <i data-lucide="user" class="w-4 h-4"></i>
-            </span>
-            <input type="text" id="login-username" required placeholder="e.g. dr.adams or your username" class="w-full bg-slate-50 border border-slate-300 rounded-lg pl-9 pr-3 py-2 font-medium text-slate-900 text-sm focus:ring-teal-500 focus:border-teal-500">
-          </div>
-        </div>
-
-        <div>
-          <label class="block text-slate-700 mb-1">Password</label>
-          <div class="relative">
-            <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
-              <i data-lucide="key-round" class="w-4 h-4"></i>
-            </span>
-            <input type="password" id="login-password" required placeholder="••••••••" class="w-full bg-slate-50 border border-slate-300 rounded-lg pl-9 pr-3 py-2 font-medium text-slate-900 text-sm focus:ring-teal-500 focus:border-teal-500">
-          </div>
-        </div>
-
-        <div class="p-3 bg-slate-50 border border-slate-200 rounded-lg text-[11px] text-slate-600 font-normal space-y-1">
-          <p class="font-semibold text-slate-700">Hospital Seed Accounts:</p>
-          <div class="grid grid-cols-2 gap-1 text-[10px] text-slate-500">
-            <span>👨‍⚕️ <b>dr.adams</b> (Doctor)</span>
-            <span>👩‍⚕️ <b>nurse.baker</b> (Nurse)</span>
-            <span>💊 <b>pharm.clark</b> (Pharmacist)</span>
-            <span>🔬 <b>lab.davis</b> (Lab Tech)</span>
-            <span>🛡️ <b>admin</b> (Administrator)</span>
-          </div>
-          <p class="text-[10px] text-slate-400 italic pt-1">Password: <code>DoctorPassword123!</code> / <code>NursePassword123!</code> / etc.</p>
-        </div>
-
-        <div class="flex items-center justify-between pt-2">
-          <button type="button" onclick="openRegisterModal()" class="text-xs font-semibold text-teal-700 hover:text-teal-800 underline">
-            Need an account? Register
-          </button>
-          <button type="submit" id="btn-login-submit" class="px-5 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg font-bold shadow-xs transition">
-            Sign In
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- ======================================================== -->
-  <!-- MODAL: REGISTER / CREATE ACCOUNT -->
-  <!-- ======================================================== -->
-  <div id="modal-register" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs hidden flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
-        <div class="flex items-center space-x-2.5">
-          <div class="h-9 w-9 rounded-xl bg-teal-50 border border-teal-200 flex items-center justify-center text-teal-700">
-            <i data-lucide="user-plus" class="w-5 h-5"></i>
-          </div>
-          <div>
-            <h3 class="text-base font-bold text-slate-900">Create Staff Account</h3>
-            <p class="text-xs text-slate-500">Register as a clinical professional</p>
-          </div>
-        </div>
-        <button type="button" onclick="closeModal('modal-register')" class="text-slate-400 hover:text-slate-600">
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
-      </div>
-
-      <form id="form-register" onsubmit="handleRegister(event)" class="space-y-3.5 text-xs font-semibold">
-        <div>
-          <label class="block text-slate-700 mb-1">Full Name & Title</label>
-          <input type="text" id="reg-fullname" required placeholder="e.g. Dr. Oche Gabriel or Nurse Jane Doe" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 font-medium text-slate-900 text-sm focus:ring-teal-500 focus:border-teal-500">
-        </div>
-
-        <div>
-          <label class="block text-slate-700 mb-1">Username</label>
-          <input type="text" id="reg-username" required placeholder="e.g. oche.gabriel" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 font-medium text-slate-900 text-sm focus:ring-teal-500 focus:border-teal-500">
-        </div>
-
-        <div>
-          <label class="block text-slate-700 mb-1">Clinical Role / Cadre</label>
-          <select id="reg-role" required class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 font-medium text-slate-900 text-sm focus:ring-teal-500 focus:border-teal-500">
-            <option value="DOCTOR">👨‍⚕️ Medical Doctor (Physician / Surgeon)</option>
-            <option value="NURSE">👩‍⚕️ Registered Nurse (Inpatient Bedside & Vitals)</option>
-            <option value="PHARMACIST">💊 Clinical Pharmacist (Medication & Dispensing)</option>
-            <option value="LAB_TECH">🔬 Medical Laboratory Scientist (Diagnostics)</option>
-            <option value="ADMIN">🛡️ Hospital Administrator (Governance & Audit)</option>
-          </select>
-          <p class="text-[10px] text-slate-400 mt-1 font-normal">Privileges and access controls are strictly scoped to your selected role.</p>
-        </div>
-
-        <div>
-          <label class="block text-slate-700 mb-1">Password</label>
-          <input type="password" id="reg-password" required minlength="8" placeholder="At least 8 characters" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 font-medium text-slate-900 text-sm focus:ring-teal-500 focus:border-teal-500">
-        </div>
-
-        <div>
-          <label class="block text-slate-700 mb-1">Confirm Password</label>
-          <input type="password" id="reg-confirm-password" required minlength="8" placeholder="Re-enter password" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 font-medium text-slate-900 text-sm focus:ring-teal-500 focus:border-teal-500">
-        </div>
-
-        <div class="flex items-center justify-between pt-2">
-          <button type="button" onclick="openLoginModal()" class="text-xs font-semibold text-teal-700 hover:text-teal-800 underline">
-            Already registered? Sign In
-          </button>
-          <button type="submit" id="btn-register-submit" class="px-5 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg font-bold shadow-xs transition">
-            Create Account & Sign In
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- ======================================================== -->
   <!-- FRONTEND LOGIC & JAVASCRIPT APP -->
   <!-- ======================================================== -->
   <script>
@@ -767,12 +804,14 @@
       ['wards', 'clinical', 'handover', 'timeline', 'patients', 'audit'].forEach(t => {
         const view = document.getElementById(`view-${t}`);
         const btn = document.getElementById(`tab-btn-${t}`);
-        if (t === tab) {
-          view.classList.remove('hidden');
-          btn.className = 'tab-btn py-3 text-sm font-semibold border-b-2 border-teal-600 text-teal-700 flex items-center space-x-2';
-        } else {
-          view.classList.add('hidden');
-          btn.className = 'tab-btn py-3 text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-800 flex items-center space-x-2';
+        if (view && btn) {
+          if (t === tab) {
+            view.classList.remove('hidden');
+            btn.className = 'tab-btn py-3 text-sm font-semibold border-b-2 border-teal-600 text-teal-700 flex items-center space-x-2';
+          } else {
+            view.classList.add('hidden');
+            btn.className = 'tab-btn py-3 text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-800 flex items-center space-x-2';
+          }
         }
       });
       lucide.createIcons();
@@ -785,17 +824,38 @@
       if (tab === 'audit') loadAuditLogs();
     }
 
-    // Modal controls for Authentication
-    function openLoginModal() {
-      closeModal('modal-register');
-      openModal('modal-login');
-      setTimeout(() => document.getElementById('login-username')?.focus(), 50);
+    // Gateway Tab Switcher (Staff Sign In vs Create Cadre Account)
+    function toggleAuthGatewayTab(tab) {
+      const loginTab = document.getElementById('tab-auth-login');
+      const regTab = document.getElementById('tab-auth-register');
+      const loginPane = document.getElementById('pane-gateway-login');
+      const regPane = document.getElementById('pane-gateway-register');
+
+      if (tab === 'login') {
+        if (loginTab) loginTab.className = 'flex-1 py-3 text-xs font-bold text-center border-b-2 border-teal-600 text-teal-700 bg-white flex items-center justify-center space-x-2';
+        if (regTab) regTab.className = 'flex-1 py-3 text-xs font-semibold text-center border-b-2 border-transparent text-slate-500 hover:text-slate-800 flex items-center justify-center space-x-2';
+        if (loginPane) loginPane.classList.remove('hidden');
+        if (regPane) regPane.classList.add('hidden');
+        setTimeout(() => document.getElementById('gateway-username')?.focus(), 50);
+      } else {
+        if (regTab) regTab.className = 'flex-1 py-3 text-xs font-bold text-center border-b-2 border-teal-600 text-teal-700 bg-white flex items-center justify-center space-x-2';
+        if (loginTab) loginTab.className = 'flex-1 py-3 text-xs font-semibold text-center border-b-2 border-transparent text-slate-500 hover:text-slate-800 flex items-center justify-center space-x-2';
+        if (regPane) regPane.classList.remove('hidden');
+        if (loginPane) loginPane.classList.add('hidden');
+        setTimeout(() => document.getElementById('reg-fullname')?.focus(), 50);
+      }
+      lucide.createIcons();
     }
 
-    function openRegisterModal() {
-      closeModal('modal-login');
-      openModal('modal-register');
-      setTimeout(() => document.getElementById('reg-fullname')?.focus(), 50);
+    // Helper: Fill credentials into Gateway inputs
+    function fillGatewayCredentials(username, password, roleLabel) {
+      toggleAuthGatewayTab('login');
+      const uInput = document.getElementById('gateway-username');
+      const pInput = document.getElementById('gateway-password');
+      if (uInput) uInput.value = username;
+      if (pInput) pInput.value = password;
+      showToast(`Loaded ${roleLabel} credentials (${username}). Click "Sign In & Unlock Workspace".`, 'info');
+      uInput?.focus();
     }
 
     // Authenticated API Fetch
@@ -806,28 +866,29 @@
       }
       const response = await fetch(`${API_BASE}${endpoint}`, { ...options, headers });
       if (response.status === 401) {
-        showToast('Your session has expired. Please sign in.', 'warning');
+        showToast('Your clinical session has expired. Please sign in.', 'warning');
         logout();
         return response;
       }
       return response;
     }
 
-    // Sign In Handler
-    async function handleLogin(e) {
+    // Sign In Gateway Handler
+    async function handleGatewayLogin(e) {
       if (e) e.preventDefault();
-      const username = document.getElementById('login-username').value.trim();
-      const password = document.getElementById('login-password').value;
-      const btn = document.getElementById('btn-login-submit');
+      const username = document.getElementById('gateway-username').value.trim();
+      const password = document.getElementById('gateway-password').value;
+      const btn = document.getElementById('btn-gateway-login-submit');
 
       if (!username || !password) {
-        showToast('Please enter username and password', 'warning');
+        showToast('Please enter both User ID and Password', 'warning');
         return;
       }
 
       try {
         btn.disabled = true;
-        btn.innerText = 'Signing in...';
+        btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin mr-2"></i><span>Authenticating...</span>';
+        lucide.createIcons();
 
         const res = await fetch(`${API_BASE}/users/login`, {
           method: 'POST',
@@ -837,7 +898,7 @@
 
         if (!res.ok) {
           const errData = await res.json().catch(() => ({}));
-          throw new Error(errData.detail || 'Invalid username or password');
+          throw new Error(errData.detail || 'Invalid User ID or Password');
         }
 
         const data = await res.json();
@@ -845,9 +906,8 @@
         localStorage.setItem('carelink_token', authToken);
 
         await fetchCurrentUser();
-        closeModal('modal-login');
-        document.getElementById('form-login').reset();
-        showToast(`Welcome back, ${authUser.full_name}! (${authUser.role})`, 'success');
+        document.getElementById('form-gateway-login').reset();
+        showToast(`Access granted! Signed in as ${authUser.full_name} (${authUser.role})`, 'success');
 
         await initWards();
         await loadPatientsDirectory();
@@ -855,19 +915,20 @@
         showToast(err.message, 'error');
       } finally {
         btn.disabled = false;
-        btn.innerText = 'Sign In';
+        btn.innerHTML = '<i data-lucide="lock-open" class="w-4 h-4 mr-2"></i><span>Sign In & Unlock Workspace</span>';
+        lucide.createIcons();
       }
     }
 
     // Register Account Handler
-    async function handleRegister(e) {
+    async function handleGatewayRegister(e) {
       if (e) e.preventDefault();
       const full_name = document.getElementById('reg-fullname').value.trim();
       const username = document.getElementById('reg-username').value.trim();
       const role = document.getElementById('reg-role').value;
       const password = document.getElementById('reg-password').value;
       const confirm = document.getElementById('reg-confirm-password').value;
-      const btn = document.getElementById('btn-register-submit');
+      const btn = document.getElementById('btn-gateway-register-submit');
 
       if (!full_name || !username || !password) {
         showToast('Please fill in all required fields', 'warning');
@@ -886,7 +947,8 @@
 
       try {
         btn.disabled = true;
-        btn.innerText = 'Creating account...';
+        btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin mr-2"></i><span>Registering account...</span>';
+        lucide.createIcons();
 
         // 1. Create User
         const regRes = await fetch(`${API_BASE}/users/`, {
@@ -897,7 +959,7 @@
 
         if (!regRes.ok) {
           const errData = await regRes.json().catch(() => ({}));
-          throw new Error(errData.detail || 'Registration failed');
+          throw new Error(errData.detail || 'Cadre registration failed');
         }
 
         // 2. Log in automatically
@@ -907,15 +969,14 @@
           body: JSON.stringify({ username, password })
         });
 
-        if (!loginRes.ok) throw new Error('Account created! Please sign in.');
+        if (!loginRes.ok) throw new Error('Account created! Please sign in with your credentials.');
 
         const loginData = await loginRes.json();
         authToken = loginData.access_token;
         localStorage.setItem('carelink_token', authToken);
 
         await fetchCurrentUser();
-        closeModal('modal-register');
-        document.getElementById('form-register').reset();
+        document.getElementById('form-gateway-register').reset();
         showToast(`Account created! Welcome, ${authUser.full_name} (${authUser.role})`, 'success');
 
         await initWards();
@@ -924,18 +985,18 @@
         showToast(err.message, 'error');
       } finally {
         btn.disabled = false;
-        btn.innerText = 'Create Account & Sign In';
+        btn.innerHTML = '<i data-lucide="user-check" class="w-4 h-4 mr-2"></i><span>Create Account & Enter Workspace</span>';
+        lucide.createIcons();
       }
     }
 
-    // Sign Out
+    // Sign Out Handler: Locks workspace and displays authentication gateway
     function logout() {
       authToken = null;
       authUser = null;
       localStorage.removeItem('carelink_token');
       updateAuthUI();
-      showToast('You have been signed out', 'info');
-      openLoginModal();
+      showToast('You have been signed out. Please authenticate to access workspace.', 'info');
     }
 
     // Fetch Current Authenticated User Details
@@ -958,15 +1019,59 @@
       }
     }
 
-    // Update Header and Role Badging in DOM
-    function updateAuthUI() {
-      const loggedOutBox = document.getElementById('auth-actions-logged-out');
-      const loggedInBox = document.getElementById('auth-profile-logged-in');
-      const roleBadge = document.getElementById('user-role-badge');
+    // Apply Cadre Permissions & Customize Visible Navigation Tabs
+    function applyCadrePermissions(role) {
+      const tabWards = document.getElementById('tab-btn-wards');
+      const tabClinical = document.getElementById('tab-btn-clinical');
+      const tabHandover = document.getElementById('tab-btn-handover');
+      const tabTimeline = document.getElementById('tab-btn-timeline');
+      const tabPatients = document.getElementById('tab-btn-patients');
+      const tabAudit = document.getElementById('tab-btn-audit');
 
-      if (authUser) {
-        if (loggedOutBox) loggedOutBox.classList.add('hidden');
-        if (loggedInBox) loggedInBox.classList.remove('hidden');
+      // Reset visibility
+      [tabWards, tabClinical, tabHandover, tabTimeline, tabPatients, tabAudit].forEach(btn => {
+        if (btn) btn.classList.remove('hidden');
+      });
+
+      if (role === 'DOCTOR') {
+        if (tabAudit) tabAudit.classList.add('hidden');
+        setTab('clinical');
+      } else if (role === 'NURSE') {
+        if (tabAudit) tabAudit.classList.add('hidden');
+        setTab('wards');
+      } else if (role === 'PHARMACIST') {
+        if (tabWards) tabWards.classList.add('hidden');
+        if (tabHandover) tabHandover.classList.add('hidden');
+        if (tabAudit) tabAudit.classList.add('hidden');
+        setTab('timeline');
+      } else if (role === 'LAB_TECH' || role === 'LABORATORY_STAFF') {
+        if (tabWards) tabWards.classList.add('hidden');
+        if (tabHandover) tabHandover.classList.add('hidden');
+        if (tabAudit) tabAudit.classList.add('hidden');
+        setTab('timeline');
+      } else if (role === 'ADMIN') {
+        setTab('audit');
+      } else {
+        if (tabAudit) tabAudit.classList.add('hidden');
+        setTab('wards');
+      }
+    }
+
+    // Update Header, Gateway Gate, and Role Badging in DOM
+    function updateAuthUI() {
+      const authGateway = document.getElementById('auth-gateway');
+      const appWorkspace = document.getElementById('app-workspace');
+      const navTabs = document.getElementById('clinical-nav-tabs');
+      const loggedOutHeader = document.getElementById('header-logged-out');
+      const loggedInHeader = document.getElementById('header-logged-in');
+
+      if (authUser && authToken) {
+        // Authenticated: Hide gateway, reveal clinical workspace and role tabs
+        if (authGateway) authGateway.classList.add('hidden');
+        if (appWorkspace) appWorkspace.classList.remove('hidden');
+        if (navTabs) navTabs.classList.remove('hidden');
+        if (loggedOutHeader) loggedOutHeader.classList.add('hidden');
+        if (loggedInHeader) loggedInHeader.classList.remove('hidden');
 
         const nameEl = document.getElementById('user-name');
         if (nameEl) nameEl.innerText = authUser.full_name || authUser.username;
@@ -982,27 +1087,98 @@
           avatarEl.innerText = initials;
         }
 
+        const roleBadge = document.getElementById('user-role-badge');
+        const banner = document.getElementById('role-cadre-banner');
         if (roleBadge) {
           roleBadge.innerText = authUser.role;
           let roleClasses = 'inline-block text-[10px] uppercase font-extrabold tracking-wider px-2 py-0.5 rounded ';
+          let bannerHTML = '';
+          let bannerClasses = 'mb-6 p-4 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shadow-xs ';
+
           if (authUser.role === 'DOCTOR') {
             roleClasses += 'bg-blue-100 text-blue-800 border border-blue-200';
+            bannerClasses += 'bg-blue-50/70 border-blue-200 text-blue-900';
+            bannerHTML = `
+              <div class="flex items-center space-x-2.5">
+                <div class="p-2 rounded-lg bg-blue-100 text-blue-800"><i data-lucide="stethoscope" class="w-4 h-4"></i></div>
+                <div>
+                  <span class="font-bold">Active Cadre: Medical Doctor Workspace</span>
+                  <p class="text-[11px] text-blue-700 font-medium">Authorized for Inpatient NEWS2 Review, Clinical Notes, Diagnostic Lab Orders, Admissions & Prescriptions.</p>
+                </div>
+              </div>
+            `;
           } else if (authUser.role === 'NURSE') {
             roleClasses += 'bg-emerald-100 text-emerald-800 border border-emerald-200';
+            bannerClasses += 'bg-emerald-50/70 border-emerald-200 text-emerald-900';
+            bannerHTML = `
+              <div class="flex items-center space-x-2.5">
+                <div class="p-2 rounded-lg bg-emerald-100 text-emerald-800"><i data-lucide="heart-pulse" class="w-4 h-4"></i></div>
+                <div>
+                  <span class="font-bold">Active Cadre: Nursing Station Workspace</span>
+                  <p class="text-[11px] text-emerald-700 font-medium">Authorized for Bed Occupancy Management, Patient Rounding, Bedside Vitals Recording & SBAR Shift Handover.</p>
+                </div>
+              </div>
+            `;
           } else if (authUser.role === 'PHARMACIST') {
             roleClasses += 'bg-purple-100 text-purple-800 border border-purple-200';
+            bannerClasses += 'bg-purple-50/70 border-purple-200 text-purple-900';
+            bannerHTML = `
+              <div class="flex items-center space-x-2.5">
+                <div class="p-2 rounded-lg bg-purple-100 text-purple-800"><i data-lucide="pill" class="w-4 h-4"></i></div>
+                <div>
+                  <span class="font-bold">Active Cadre: Clinical Pharmacy & Dispensary</span>
+                  <p class="text-[11px] text-purple-700 font-medium">Authorized for Medication Order Verification, Anti-Fatigue Safety Watchdog & Clinical Timeline.</p>
+                </div>
+              </div>
+            `;
           } else if (authUser.role === 'LAB_TECH' || authUser.role === 'LABORATORY_STAFF') {
             roleClasses += 'bg-indigo-100 text-indigo-800 border border-indigo-200';
+            bannerClasses += 'bg-indigo-50/70 border-indigo-200 text-indigo-900';
+            bannerHTML = `
+              <div class="flex items-center space-x-2.5">
+                <div class="p-2 rounded-lg bg-indigo-100 text-indigo-800"><i data-lucide="microscope" class="w-4 h-4"></i></div>
+                <div>
+                  <span class="font-bold">Active Cadre: Diagnostic Pathology Laboratory</span>
+                  <p class="text-[11px] text-indigo-700 font-medium">Authorized for Diagnostic Investigation Orders, Specimen Processing & Entering Test Results.</p>
+                </div>
+              </div>
+            `;
           } else if (authUser.role === 'ADMIN') {
             roleClasses += 'bg-rose-100 text-rose-800 border border-rose-200';
+            bannerClasses += 'bg-rose-50/70 border-rose-200 text-rose-900';
+            bannerHTML = `
+              <div class="flex items-center space-x-2.5">
+                <div class="p-2 rounded-lg bg-rose-100 text-rose-800"><i data-lucide="shield-check" class="w-4 h-4"></i></div>
+                <div>
+                  <span class="font-bold">Active Cadre: Hospital Administrator</span>
+                  <p class="text-[11px] text-rose-700 font-medium">Full Administrative Governance: Cryptographic Audit Trail, User Cadres & Hospital Ward Configuration.</p>
+                </div>
+              </div>
+            `;
           } else {
             roleClasses += 'bg-slate-100 text-slate-700 border border-slate-200';
+            bannerClasses += 'bg-slate-50 border-slate-200 text-slate-800';
+            bannerHTML = `<div><span class="font-bold">Active Cadre: ${authUser.role}</span></div>`;
           }
           roleBadge.className = roleClasses;
+          if (banner) {
+            banner.className = bannerClasses;
+            banner.innerHTML = bannerHTML + `
+              <div class="text-[11px] text-slate-500 font-medium shrink-0">
+                Staff ID: <span class="font-mono font-bold text-slate-700">#${authUser.id} (${authUser.username})</span>
+              </div>
+            `;
+          }
         }
+
+        applyCadrePermissions(authUser.role);
       } else {
-        if (loggedOutBox) loggedOutBox.classList.remove('hidden');
-        if (loggedInBox) loggedInBox.classList.add('hidden');
+        // Unauthenticated: Lock clinical workspace completely, show authentication gateway
+        if (authGateway) authGateway.classList.remove('hidden');
+        if (appWorkspace) appWorkspace.classList.add('hidden');
+        if (navTabs) navTabs.classList.add('hidden');
+        if (loggedOutHeader) loggedOutHeader.classList.remove('hidden');
+        if (loggedInHeader) loggedInHeader.classList.add('hidden');
       }
       lucide.createIcons();
     }
@@ -1573,8 +1749,8 @@
     // Modal Triggers & Form Submissions
     function openVitalsModal() {
       if (!authUser) {
-        showToast('Please sign in with your staff account first', 'warning');
-        openLoginModal();
+        showToast('Staff authentication required. Please sign in.', 'warning');
+        updateAuthUI();
         return;
       }
       const admId = document.getElementById('clinical-admission-select').value || currentAdmissionId;
@@ -1587,8 +1763,8 @@
 
     function openVitalsForAdm(admId) {
       if (!authUser) {
-        showToast('Please sign in with your staff account first', 'warning');
-        openLoginModal();
+        showToast('Staff authentication required. Please sign in.', 'warning');
+        updateAuthUI();
         return;
       }
       document.getElementById('vital-admission-id').value = admId;
@@ -1632,8 +1808,8 @@
 
     async function openAdmitModal() {
       if (!authUser) {
-        showToast('Please sign in with your staff account first', 'warning');
-        openLoginModal();
+        showToast('Staff authentication required. Please sign in.', 'warning');
+        updateAuthUI();
         return;
       }
       // Fetch available beds and patients
@@ -1694,8 +1870,8 @@
 
     function openDischargeModal(admId) {
       if (!authUser) {
-        showToast('Please sign in with your staff account first', 'warning');
-        openLoginModal();
+        showToast('Staff authentication required. Please sign in.', 'warning');
+        updateAuthUI();
         return;
       }
       document.getElementById('discharge-admission-id').value = admId;
@@ -1730,8 +1906,8 @@
 
     function openNoteModal() {
       if (!authUser) {
-        showToast('Please sign in with your staff account first', 'warning');
-        openLoginModal();
+        showToast('Staff authentication required. Please sign in.', 'warning');
+        updateAuthUI();
         return;
       }
       const admId = document.getElementById('clinical-admission-select').value || currentAdmissionId;
@@ -1777,13 +1953,13 @@
       lucide.createIcons();
       if (authToken) {
         await fetchCurrentUser();
+        if (authUser) {
+          await initWards();
+          await loadPatientsDirectory();
+        }
       } else {
         updateAuthUI();
-        // Prompt login for new or unauthenticated visitors
-        openLoginModal();
       }
-      await initWards();
-      await loadPatientsDirectory();
     });
   </script>
 
