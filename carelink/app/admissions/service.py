@@ -38,14 +38,6 @@ def create_admission(
     if patient is None:
         raise ValueError("Patient not found")
 
-    ward = db.get(
-        Ward,
-        admission_data.ward_id
-    )
-
-    if ward is None:
-        raise ValueError("Ward not found")
-
     bed = db.get(
         Bed,
         admission_data.bed_id
@@ -54,9 +46,25 @@ def create_admission(
     if bed is None:
         raise ValueError("Bed not found")
 
+    ward_id = admission_data.ward_id or bed.ward_id
+    ward = db.get(
+        Ward,
+        ward_id
+    )
+
+    if ward is None:
+        raise ValueError("Ward not found")
+
+    admitted_by = admission_data.admitted_by
+    if admitted_by is None:
+        fallback = db.execute(
+            select(User).where(User.role.in_(("DOCTOR", "NURSE", "ADMIN")), User.is_active == True)
+        ).scalars().first()
+        admitted_by = fallback.id if fallback else 1
+
     user = db.get(
         User,
-        admission_data.admitted_by
+        admitted_by
     )
 
     if user is None:
@@ -94,19 +102,18 @@ def create_admission(
         )
 
     admission_number = generate_admission_number(db)
+    source = admission_data.source or "A&E/Emergency"
+    reason = admission_data.reason_for_admission or admission_data.presenting_complaint or "Inpatient admission"
+    complaint = admission_data.presenting_complaint or reason
 
     admission = Admission(
         admission_number=admission_number,
         patient_id=admission_data.patient_id,
-        ward_id=admission_data.ward_id,
+        ward_id=ward.id,
         bed_id=admission_data.bed_id,
-        source=admission_data.source,
-        reason_for_admission=(
-            admission_data.reason_for_admission
-        ),
-        presenting_complaint=(
-            admission_data.presenting_complaint
-        ),
+        source=source,
+        reason_for_admission=reason,
+        presenting_complaint=complaint,
         patient_account=(
             admission_data.patient_account
         ),
@@ -119,7 +126,7 @@ def create_admission(
         nursing_diagnosis=(
             admission_data.nursing_diagnosis
         ),
-        admitted_by=admission_data.admitted_by,
+        admitted_by=user.id,
         status="ACTIVE",
     )
 

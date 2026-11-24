@@ -5,16 +5,16 @@ from pydantic import BaseModel
 
 class AdmissionCreate(BaseModel):
     patient_id: int
-    ward_id: int
+    ward_id: int | None = None
     bed_id: int
-    source: str
-    reason_for_admission: str
+    source: str = "A&E/Emergency"
+    reason_for_admission: str | None = None
     presenting_complaint: str | None = None
     patient_account: str | None = None
     doctor_assessment: str | None = None
     nursing_assessment: str | None = None
     nursing_diagnosis: str | None = None
-    admitted_by: int
+    admitted_by: int | None = None
 
 
 class AdmissionDischarge(BaseModel):

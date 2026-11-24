@@ -788,21 +788,35 @@
           </select>
         </div>
 
-        <div>
-          <label class="block text-slate-600 mb-1">Assign Available Bed*</label>
-          <select id="admit-bed-select" required class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-slate-900 font-semibold">
-            <option value="">Select an available bed...</option>
-          </select>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-slate-600 mb-1">Assign Available Bed*</label>
+            <select id="admit-bed-select" required class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-slate-900 font-semibold">
+              <option value="">Select an available bed...</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-slate-600 mb-1">Admission Source*</label>
+            <select id="admit-source" required class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-slate-900 font-semibold">
+              <option value="A&E/Emergency">Accident & Emergency (A&E)</option>
+              <option value="Outpatient">Outpatient Department (GOPD)</option>
+              <option value="Elective">Elective Surgical Booking</option>
+              <option value="Referral">Inter-Hospital Referral</option>
+              <option value="Internal Transfer">Internal Ward Transfer</option>
+            </select>
+          </div>
         </div>
 
         <div>
-          <label class="block text-slate-600 mb-1">Presenting Complaint & Diagnosis*</label>
-          <textarea id="admit-complaint" required rows="3" placeholder="e.g., Shortness of breath and fever, suspected Community-Acquired Pneumonia." class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 font-medium text-slate-900"></textarea>
+          <label class="block text-slate-600 mb-1">Presenting Complaint & Provisional Diagnosis*</label>
+          <textarea id="admit-complaint" required rows="3" placeholder="Document presenting symptoms, clinical findings, and admission indication..." class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 font-medium text-slate-900"></textarea>
         </div>
 
         <div class="flex items-center justify-end space-x-3 pt-3 border-t border-slate-100">
           <button type="button" onclick="closeModal('modal-admit')" class="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg font-semibold">Cancel</button>
-          <button type="submit" class="px-5 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg font-bold shadow-xs transition">Confirm Admission</button>
+          <button type="submit" id="btn-submit-admit" class="px-5 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg font-bold shadow-xs transition flex items-center justify-center">
+            <span>Confirm Admission</span>
+          </button>
         </div>
       </form>
     </div>
@@ -902,11 +916,33 @@
 
     // Helper: Toast notifications
     function showToast(msg, type = 'success') {
+      let text = msg;
+      if (typeof text !== 'string') {
+        if (Array.isArray(text)) {
+          text = text.map(item => {
+            if (typeof item === 'object' && item !== null) {
+              return item.msg || item.detail || JSON.stringify(item);
+            }
+            return String(item);
+          }).join(', ');
+        } else if (typeof text === 'object' && text !== null) {
+          if (text.detail) {
+            text = typeof text.detail === 'string' ? text.detail : JSON.stringify(text.detail);
+          } else if (text.message) {
+            text = text.message;
+          } else {
+            text = JSON.stringify(text);
+          }
+        } else {
+          text = String(text);
+        }
+      }
+
       const container = document.getElementById('toast-container');
       const toast = document.createElement('div');
       const color = type === 'error' ? 'bg-rose-600 text-white' : type === 'warning' ? 'bg-amber-600 text-white' : 'bg-slate-900 text-white';
       toast.className = `${color} px-4 py-2.5 rounded-xl shadow-lg text-xs font-semibold flex items-center space-x-2 transition-all duration-300 opacity-0 transform translate-y-2 pointer-events-auto`;
-      toast.innerHTML = `<span>${msg}</span>`;
+      toast.innerHTML = `<span>${text}</span>`;
       container.appendChild(toast);
       setTimeout(() => { toast.classList.remove('opacity-0', 'translate-y-2'); }, 10);
       setTimeout(() => {
@@ -1903,8 +1939,11 @@
           body: JSON.stringify(payload)
         });
         if (!res.ok) {
-          const err = await res.json();
-          throw new Error(err.detail || 'Failed to record vitals');
+          const errData = await res.json().catch(() => ({}));
+          let errMsg = 'Failed to record vitals';
+          if (typeof errData.detail === 'string') errMsg = errData.detail;
+          else if (Array.isArray(errData.detail)) errMsg = errData.detail.map(d => `${d.loc ? d.loc[d.loc.length - 1] : ''}: ${d.msg}`).join(', ');
+          throw new Error(errMsg);
         }
         showToast('Vital signs observation recorded successfully', 'success');
         closeModal('modal-vitals');
@@ -1921,59 +1960,139 @@
         updateAuthUI();
         return;
       }
-      // Fetch available beds and patients
+      if (!['DOCTOR', 'NURSE', 'ADMIN'].includes(authUser.role)) {
+        showToast(`Your clinical cadre (${authUser.role}) cannot admit patients. Only Doctors, Nurses, or Administrators can admit patients.`, 'warning');
+        return;
+      }
+
       await loadPatientsDirectory();
       const admitPatSelect = document.getElementById('admit-patient-select');
-      admitPatSelect.innerHTML = cachedPatients.map(p => `<option value="${p.id}">${p.full_name} (${p.patient_number})</option>`).join('');
+      if (!cachedPatients || !cachedPatients.length) {
+        showToast('No registered patients found in Master Patient Index.', 'warning');
+        return;
+      }
 
-      const wardId = document.getElementById('ward-select').value || currentWardId;
+      // Mark patients who already have an active admission
+      const activePatientIds = new Set((cachedAdmissions || []).filter(a => a.status === 'ACTIVE').map(a => a.patient_id));
+      let availablePatientCount = 0;
+      admitPatSelect.innerHTML = '<option value="">-- Choose a patient to admit --</option>' + cachedPatients.map(p => {
+        const hasAdm = activePatientIds.has(p.id);
+        if (!hasAdm) availablePatientCount++;
+        return `<option value="${p.id}" ${hasAdm ? 'disabled' : ''}>${p.full_name} (${p.patient_number})${hasAdm ? ' [Already Admitted]' : ''}</option>`;
+      }).join('');
+
+      if (availablePatientCount === 0) {
+        showToast('All registered patients currently have active admissions.', 'info');
+      }
+
+      const wardSelect = document.getElementById('ward-select');
+      const wardId = (wardSelect && wardSelect.value) ? wardSelect.value : currentWardId;
+      if (!wardId) {
+        showToast('Please select a ward first.', 'warning');
+        return;
+      }
+
       const bedsRes = await apiRequest(`/wards/${wardId}/beds`);
+      if (!bedsRes.ok) {
+        showToast('Failed to retrieve ward beds.', 'error');
+        return;
+      }
       const beds = await bedsRes.json();
       const availableBeds = beds.filter(b => b.status === 'AVAILABLE');
 
       const admitBedSelect = document.getElementById('admit-bed-select');
-      admitBedSelect.innerHTML = availableBeds.map(b => `<option value="${b.id}">${b.bed_number}</option>`).join('');
-
       if (!availableBeds.length) {
-        showToast('No available beds in this ward!', 'warning');
+        showToast('No available beds in this ward! All beds are occupied.', 'warning');
         return;
       }
+      admitBedSelect.innerHTML = '<option value="">-- Select an available bed --</option>' + availableBeds.map(b => `<option value="${b.id}">${b.bed_number} (Bed #${b.id})</option>`).join('');
+
       openModal('modal-admit');
     }
 
     function openAdmitForBed(bedId) {
-      openAdmitModal();
-      setTimeout(() => {
+      openAdmitModal().then(() => {
         const el = document.getElementById('admit-bed-select');
-        if (el) el.value = bedId;
-      }, 100);
+        if (el && bedId) el.value = bedId;
+      });
     }
 
     async function submitAdmit(e) {
-      e.preventDefault();
+      if (e) e.preventDefault();
+      const patSelect = document.getElementById('admit-patient-select');
+      const bedSelect = document.getElementById('admit-bed-select');
+      const complaintInput = document.getElementById('admit-complaint');
+      const sourceSelect = document.getElementById('admit-source');
+      const wardSelect = document.getElementById('ward-select');
+      const submitBtn = document.getElementById('btn-submit-admit');
+
+      const patientId = parseInt(patSelect.value);
+      const bedId = parseInt(bedSelect.value);
+      const complaint = complaintInput.value.trim();
+      const source = sourceSelect ? sourceSelect.value : 'A&E/Emergency';
+      const wardId = parseInt((wardSelect && wardSelect.value) ? wardSelect.value : currentWardId);
+
+      if (!patientId || isNaN(patientId)) {
+        showToast('Please select a patient to admit', 'warning');
+        return;
+      }
+      if (!bedId || isNaN(bedId)) {
+        showToast('Please select an available bed', 'warning');
+        return;
+      }
+      if (!complaint) {
+        showToast('Please enter the presenting complaint and provisional diagnosis', 'warning');
+        return;
+      }
+
       const payload = {
-        patient_id: parseInt(document.getElementById('admit-patient-select').value),
-        bed_id: parseInt(document.getElementById('admit-bed-select').value),
-        presenting_complaint: document.getElementById('admit-complaint').value,
-        admitted_by: authUser ? authUser.id : 1
+        patient_id: patientId,
+        ward_id: isNaN(wardId) ? null : wardId,
+        bed_id: bedId,
+        source: source,
+        reason_for_admission: complaint,
+        presenting_complaint: complaint,
+        admitted_by: (authUser && authUser.id) ? authUser.id : 1
       };
 
       try {
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin mr-2"></i><span>Admitting...</span>';
+          lucide.createIcons();
+        }
+
         const res = await apiRequest('/admissions/', {
           method: 'POST',
           body: JSON.stringify(payload)
         });
+
         if (!res.ok) {
-          const err = await res.json();
-          throw new Error(err.detail || 'Admission failed');
+          const errData = await res.json().catch(() => ({}));
+          let errMsg = 'Admission failed';
+          if (typeof errData.detail === 'string') {
+            errMsg = errData.detail;
+          } else if (Array.isArray(errData.detail)) {
+            errMsg = errData.detail.map(d => `${d.loc ? d.loc[d.loc.length - 1] : ''}: ${d.msg}`).join(', ');
+          } else if (errData.message) {
+            errMsg = errData.message;
+          }
+          throw new Error(errMsg);
         }
+
         const created = await res.json();
         showToast(`Patient admitted successfully (${created.admission_number})`, 'success');
         closeModal('modal-admit');
         document.getElementById('form-admit').reset();
         await loadWardBeds();
+        await loadPatientsDirectory();
       } catch (err) {
-        showToast(err.message, 'error');
+        showToast(err.message || 'Admission failed', 'error');
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = '<span>Confirm Admission</span>';
+        }
       }
     }
 
@@ -2001,8 +2120,11 @@
           body: JSON.stringify(payload)
         });
         if (!res.ok) {
-          const err = await res.json();
-          throw new Error(err.detail || 'Discharge authorization failed');
+          const errData = await res.json().catch(() => ({}));
+          let errMsg = 'Discharge authorization failed';
+          if (typeof errData.detail === 'string') errMsg = errData.detail;
+          else if (Array.isArray(errData.detail)) errMsg = errData.detail.map(d => `${d.loc ? d.loc[d.loc.length - 1] : ''}: ${d.msg}`).join(', ');
+          throw new Error(errMsg);
         }
         showToast('Patient discharged successfully. Bed freed.', 'success');
         closeModal('modal-discharge');
@@ -2045,8 +2167,11 @@
           body: JSON.stringify(payload)
         });
         if (!res.ok) {
-          const err = await res.json();
-          throw new Error(err.detail || 'Failed to save clinical note');
+          const errData = await res.json().catch(() => ({}));
+          let errMsg = 'Failed to save clinical note';
+          if (typeof errData.detail === 'string') errMsg = errData.detail;
+          else if (Array.isArray(errData.detail)) errMsg = errData.detail.map(d => `${d.loc ? d.loc[d.loc.length - 1] : ''}: ${d.msg}`).join(', ');
+          throw new Error(errMsg);
         }
         showToast('Clinical note saved successfully', 'success');
         closeModal('modal-note');
