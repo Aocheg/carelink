@@ -129,265 +129,131 @@
   <!-- ======================================================== -->
   <!-- AUTHENTICATION GATEWAY: DISPLAYED WHEN NOT SIGNED IN -->
   <!-- ======================================================== -->
-  <section id="auth-gateway" class="flex-1 relative overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-teal-950 py-12 px-4 sm:px-6 lg:px-8 flex items-center justify-center">
+  <section id="auth-gateway" class="flex-1 relative overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-teal-950 py-16 px-4 sm:px-6 lg:px-8 flex items-center justify-center">
     
     <!-- Ambient Medical Glow Orbs & Grid Background -->
     <div class="absolute -top-32 -left-32 w-96 h-96 bg-teal-500/15 rounded-full blur-3xl pointer-events-none"></div>
     <div class="absolute -bottom-32 -right-32 w-96 h-96 bg-cyan-500/15 rounded-full blur-3xl pointer-events-none"></div>
     <div class="absolute inset-0 bg-[radial-gradient(#14b8a612_1px,transparent_1px)] [background-size:24px_24px] pointer-events-none"></div>
 
-    <div class="max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center relative z-10">
-
-      <!-- LEFT COLUMN: PLATFORM HERO & CLINICAL OVERVIEW -->
-      <div class="lg:col-span-7 space-y-6 text-white">
+    <div class="max-w-md w-full relative z-10">
+      
+      <!-- Elevated Authentication Card -->
+      <div class="bg-white rounded-2xl shadow-2xl border border-slate-200/90 overflow-hidden text-slate-900">
         
-        <!-- Live System Status Pill -->
-        <div class="inline-flex items-center space-x-2.5 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-teal-500/10 border border-teal-500/30 text-teal-300 shadow-sm backdrop-blur-xs">
-          <span class="w-2 h-2 rounded-full bg-teal-400 animate-pulse"></span>
-          <span>National Teaching Hospital &bull; Clinical EMR Core</span>
+        <!-- Portal Card Header -->
+        <div class="p-6 bg-gradient-to-r from-teal-900 via-slate-900 to-cyan-950 text-white text-center">
+          <div class="mx-auto h-12 w-12 rounded-2xl bg-teal-500/20 border border-teal-400/30 flex items-center justify-center text-teal-300 mb-3 shadow-sm">
+            <i data-lucide="activity" class="w-6 h-6"></i>
+          </div>
+          <h2 class="text-xl font-extrabold tracking-tight">CareLink Clinical Portal</h2>
+          <p class="text-xs text-teal-200/90 mt-1">Staff Access &bull; National Teaching Hospital</p>
         </div>
 
-        <!-- Main Headline -->
-        <div class="space-y-3">
-          <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white leading-tight">
-            Clinical Continuity &amp; <br class="hidden sm:inline">
-            <span class="text-transparent bg-clip-text bg-gradient-to-r from-teal-300 via-cyan-200 to-emerald-200">
-              Patient Safety Platform
-            </span>
-          </h1>
-          <p class="text-sm sm:text-base text-slate-300 leading-relaxed max-w-2xl font-normal">
-            An enterprise clinical operating system uniting physiological early-warning deterioration detection (NEWS2), closed-loop medication safety, dynamic ward bed management, and role-scoped healthcare workflows.
-          </p>
+        <!-- Auth Mode Tabs -->
+        <div class="flex border-b border-slate-200 bg-slate-50">
+          <button id="tab-auth-login" onclick="toggleAuthGatewayTab('login')" class="flex-1 py-3.5 text-xs font-bold text-center border-b-2 border-teal-600 text-teal-700 bg-white flex items-center justify-center space-x-2 transition">
+            <i data-lucide="log-in" class="w-4 h-4"></i>
+            <span>Staff Sign In</span>
+          </button>
+          <button id="tab-auth-register" onclick="toggleAuthGatewayTab('register')" class="flex-1 py-3.5 text-xs font-semibold text-center border-b-2 border-transparent text-slate-500 hover:text-slate-800 flex items-center justify-center space-x-2 transition">
+            <i data-lucide="user-plus" class="w-4 h-4"></i>
+            <span>Create Account</span>
+          </button>
         </div>
 
-        <!-- 3 Mature Core Pillars -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5 pt-2">
-          
-          <div class="p-4 rounded-xl bg-slate-900/80 border border-slate-700/70 backdrop-blur-sm shadow-md flex flex-col justify-between">
-            <div>
-              <div class="h-9 w-9 rounded-lg bg-teal-500/20 text-teal-300 flex items-center justify-center mb-3">
-                <i data-lucide="heart-pulse" class="w-5 h-5"></i>
-              </div>
-              <h3 class="text-xs font-bold text-white uppercase tracking-wider">NEWS2 Surveillance</h3>
-              <p class="text-[11px] text-slate-300 mt-1 leading-relaxed">
-                Real-time automated physiological deterioration tracking and risk escalation.
-              </p>
-            </div>
-            <div class="mt-3 pt-2 border-t border-slate-800 text-[10px] font-semibold text-teal-400 flex items-center">
-              <span>Automated Risk Scoring</span>
-            </div>
-          </div>
-
-          <div class="p-4 rounded-xl bg-slate-900/80 border border-slate-700/70 backdrop-blur-sm shadow-md flex flex-col justify-between">
-            <div>
-              <div class="h-9 w-9 rounded-lg bg-emerald-500/20 text-emerald-300 flex items-center justify-center mb-3">
-                <i data-lucide="layout-grid" class="w-5 h-5"></i>
-              </div>
-              <h3 class="text-xs font-bold text-white uppercase tracking-wider">Ward Bed Matrix</h3>
-              <p class="text-[11px] text-slate-300 mt-1 leading-relaxed">
-                Visual bed occupancy across Adult Medical, Surgical, Pediatric, and ICU wings.
-              </p>
-            </div>
-            <div class="mt-3 pt-2 border-t border-slate-800 text-[10px] font-semibold text-emerald-400 flex items-center">
-              <span>Coordinated Triage</span>
-            </div>
-          </div>
-
-          <div class="p-4 rounded-xl bg-slate-900/80 border border-slate-700/70 backdrop-blur-sm shadow-md flex flex-col justify-between">
-            <div>
-              <div class="h-9 w-9 rounded-lg bg-cyan-500/20 text-cyan-300 flex items-center justify-center mb-3">
-                <i data-lucide="shield-check" class="w-5 h-5"></i>
-              </div>
-              <h3 class="text-xs font-bold text-white uppercase tracking-wider">Cadre Workspaces</h3>
-              <p class="text-[11px] text-slate-300 mt-1 leading-relaxed">
-                Isolated interfaces strictly authorized for Doctors, Nurses, Pharmacists, and Lab Techs.
-              </p>
-            </div>
-            <div class="mt-3 pt-2 border-t border-slate-800 text-[10px] font-semibold text-cyan-400 flex items-center">
-              <span>Role-Based Access</span>
-            </div>
-          </div>
-
-        </div>
-
-        <!-- Trust & Compliance Metrics Footer -->
-        <div class="pt-4 border-t border-slate-800/80 flex flex-wrap items-center gap-4 sm:gap-6 text-xs text-slate-400 font-medium">
-          <div class="flex items-center space-x-1.5">
-            <i data-lucide="lock" class="w-4 h-4 text-teal-400"></i>
-            <span>SHA-256 Chained Audit Trail</span>
-          </div>
-          <div class="flex items-center space-x-1.5">
-            <i data-lucide="clipboard-check" class="w-4 h-4 text-emerald-400"></i>
-            <span>SBAR Shift Handover Standard</span>
-          </div>
-          <div class="flex items-center space-x-1.5">
-            <i data-lucide="bell" class="w-4 h-4 text-cyan-400"></i>
-            <span>Anti-Fatigue Medication Watchdog</span>
-          </div>
-        </div>
-
-      </div>
-
-      <!-- RIGHT COLUMN: AUTHENTICATION CARD -->
-      <div class="lg:col-span-5 w-full">
-        <div class="bg-white rounded-2xl shadow-2xl border border-slate-200/90 overflow-hidden text-slate-900">
-          
-          <!-- Card Header Banner -->
-          <div class="p-5 bg-gradient-to-r from-teal-900 via-slate-900 to-cyan-950 text-white">
-            <div class="flex items-center space-x-3 mb-1.5">
-              <div class="h-9 w-9 rounded-xl bg-teal-500/20 border border-teal-400/30 flex items-center justify-center text-teal-300 shrink-0">
-                <i data-lucide="lock" class="w-4 h-4"></i>
-              </div>
+        <div class="p-6 sm:p-8">
+          <!-- PANE 1: SIGN IN -->
+          <div id="pane-gateway-login" class="space-y-4">
+            <form id="form-gateway-login" onsubmit="handleGatewayLogin(event)" class="space-y-4">
               <div>
-                <h2 class="text-base font-bold tracking-tight">Staff Authentication Gateway</h2>
-                <p class="text-[11px] text-teal-200/90">Hospital Clinical System &bull; Secure Portal</p>
-              </div>
-            </div>
-            <p class="text-[11px] text-teal-100/80 leading-relaxed pt-1.5 border-t border-teal-800/50">
-              Select your cadre test account or sign in with registered staff credentials to access your designated workspace.
-            </p>
-          </div>
-
-          <!-- Auth Mode Tabs -->
-          <div class="flex border-b border-slate-200 bg-slate-50/80">
-            <button id="tab-auth-login" onclick="toggleAuthGatewayTab('login')" class="flex-1 py-3 text-xs font-bold text-center border-b-2 border-teal-600 text-teal-700 bg-white flex items-center justify-center space-x-2 transition">
-              <i data-lucide="log-in" class="w-4 h-4"></i>
-              <span>Staff Sign In</span>
-            </button>
-            <button id="tab-auth-register" onclick="toggleAuthGatewayTab('register')" class="flex-1 py-3 text-xs font-semibold text-center border-b-2 border-transparent text-slate-500 hover:text-slate-800 flex items-center justify-center space-x-2 transition">
-              <i data-lucide="user-plus" class="w-4 h-4"></i>
-              <span>Create Cadre Account</span>
-            </button>
-          </div>
-
-          <div class="p-6">
-            <!-- PANE 1: SIGN IN -->
-            <div id="pane-gateway-login" class="space-y-4">
-              <form id="form-gateway-login" onsubmit="handleGatewayLogin(event)" class="space-y-3.5">
-                <div>
-                  <label class="block text-xs font-bold text-slate-700 mb-1">Staff Username / User ID</label>
-                  <div class="relative">
-                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
-                      <i data-lucide="user" class="w-4 h-4"></i>
-                    </span>
-                    <input type="text" id="gateway-username" required placeholder="e.g. dr.adams or nurse.baker" class="w-full bg-slate-50 border border-slate-300 rounded-lg pl-9 pr-3 py-2 font-medium text-slate-900 text-sm focus:ring-teal-500 focus:border-teal-500">
-                  </div>
-                </div>
-
-                <div>
-                  <label class="block text-xs font-bold text-slate-700 mb-1">Password</label>
-                  <div class="relative">
-                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
-                      <i data-lucide="key-round" class="w-4 h-4"></i>
-                    </span>
-                    <input type="password" id="gateway-password" required placeholder="••••••••" class="w-full bg-slate-50 border border-slate-300 rounded-lg pl-9 pr-3 py-2 font-medium text-slate-900 text-sm focus:ring-teal-500 focus:border-teal-500">
-                  </div>
-                </div>
-
-                <button type="submit" id="btn-gateway-login-submit" class="w-full py-2.5 px-4 bg-teal-600 hover:bg-teal-700 text-white font-bold text-sm rounded-lg shadow-sm hover:shadow-md transition flex items-center justify-center space-x-2">
-                  <i data-lucide="lock-open" class="w-4 h-4"></i>
-                  <span>Sign In & Unlock Workspace</span>
-                </button>
-              </form>
-
-              <!-- Cadre Evaluation Test Credentials -->
-              <div class="mt-5 pt-4 border-t border-slate-200">
-                <div class="flex items-center justify-between mb-2">
-                  <span class="text-[11px] font-bold text-slate-700 uppercase tracking-wider">Evaluation Test Credentials:</span>
-                  <span class="text-[10px] text-teal-700 font-semibold">Click role to auto-fill</span>
-                </div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-                  <button type="button" onclick="fillGatewayCredentials('dr.adams', 'DoctorPassword123!', 'Doctor')" class="text-left p-2.5 bg-blue-50/70 hover:bg-blue-100/80 border border-blue-200 rounded-lg transition">
-                    <div class="font-bold text-blue-900 flex items-center justify-between">
-                      <span>👨‍⚕️ Dr. Adams</span>
-                      <span class="text-[9px] bg-blue-200 text-blue-800 font-extrabold px-1.5 py-0.5 rounded">DOCTOR</span>
-                    </div>
-                    <div class="text-[10px] text-blue-700 font-mono mt-0.5">ID: dr.adams</div>
-                    <div class="text-[10px] text-slate-500 mt-0.5">NEWS2, Notes, Rx & Labs</div>
-                  </button>
-
-                  <button type="button" onclick="fillGatewayCredentials('nurse.baker', 'NursePassword123!', 'Nurse')" class="text-left p-2.5 bg-emerald-50/70 hover:bg-emerald-100/80 border border-emerald-200 rounded-lg transition">
-                    <div class="font-bold text-emerald-900 flex items-center justify-between">
-                      <span>👩‍⚕️ Nurse Baker</span>
-                      <span class="text-[9px] bg-emerald-200 text-emerald-800 font-extrabold px-1.5 py-0.5 rounded">NURSE</span>
-                    </div>
-                    <div class="text-[10px] text-emerald-700 font-mono mt-0.5">ID: nurse.baker</div>
-                    <div class="text-[10px] text-slate-500 mt-0.5">Ward Beds, Vitals, Handover</div>
-                  </button>
-
-                  <button type="button" onclick="fillGatewayCredentials('pharm.clark', 'PharmPassword123!', 'Pharmacist')" class="text-left p-2.5 bg-purple-50/70 hover:bg-purple-100/80 border border-purple-200 rounded-lg transition">
-                    <div class="font-bold text-purple-900 flex items-center justify-between">
-                      <span>💊 Pharm. Clark</span>
-                      <span class="text-[9px] bg-purple-200 text-purple-800 font-extrabold px-1.5 py-0.5 rounded">PHARMACIST</span>
-                    </div>
-                    <div class="text-[10px] text-purple-700 font-mono mt-0.5">ID: pharm.clark</div>
-                    <div class="text-[10px] text-slate-500 mt-0.5">Prescriptions, Watchdog</div>
-                  </button>
-
-                  <button type="button" onclick="fillGatewayCredentials('lab.davis', 'LabPassword123!', 'Lab Scientist')" class="text-left p-2.5 bg-indigo-50/70 hover:bg-indigo-100/80 border border-indigo-200 rounded-lg transition">
-                    <div class="font-bold text-indigo-900 flex items-center justify-between">
-                      <span>🔬 MLS Davis</span>
-                      <span class="text-[9px] bg-indigo-200 text-indigo-800 font-extrabold px-1.5 py-0.5 rounded">LAB_TECH</span>
-                    </div>
-                    <div class="text-[10px] text-indigo-700 font-mono mt-0.5">ID: lab.davis</div>
-                    <div class="text-[10px] text-slate-500 mt-0.5">Diagnostic Tests & Results</div>
-                  </button>
-
-                  <button type="button" onclick="fillGatewayCredentials('admin', 'AdminPassword123!', 'Hospital Admin')" class="col-span-full text-left p-2.5 bg-slate-100 hover:bg-slate-200/80 border border-slate-300 rounded-lg transition">
-                    <div class="font-bold text-slate-900 flex items-center justify-between">
-                      <span>🛡️ Hospital Administrator</span>
-                      <span class="text-[9px] bg-slate-200 text-slate-800 font-extrabold px-1.5 py-0.5 rounded">ADMIN</span>
-                    </div>
-                    <div class="text-[10px] text-slate-700 font-mono mt-0.5">ID: admin</div>
-                    <div class="text-[10px] text-slate-500 mt-0.5">System Governance, Staff Roster &amp; Cryptographic Audit Logs</div>
-                  </button>
+                <label class="block text-xs font-bold text-slate-700 mb-1">Staff Username / User ID</label>
+                <div class="relative">
+                  <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-400">
+                    <i data-lucide="user" class="w-4 h-4"></i>
+                  </span>
+                  <input type="text" id="gateway-username" required placeholder="Enter your staff username" class="w-full bg-slate-50 border border-slate-300 rounded-lg pl-10 pr-3.5 py-2.5 font-medium text-slate-900 text-sm focus:ring-teal-500 focus:border-teal-500 transition">
                 </div>
               </div>
-            </div>
 
-            <!-- PANE 2: REGISTER CADRE ACCOUNT -->
-            <div id="pane-gateway-register" class="hidden space-y-3.5">
-              <form id="form-gateway-register" onsubmit="handleGatewayRegister(event)" class="space-y-3">
-                <div>
-                  <label class="block text-xs font-bold text-slate-700 mb-1">Full Name & Professional Title</label>
-                  <input type="text" id="reg-fullname" required placeholder="e.g. Dr. Oche Gabriel or Nurse Jane Doe" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 font-medium text-slate-900 text-sm focus:ring-teal-500 focus:border-teal-500">
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">Password</label>
+                <div class="relative">
+                  <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-400">
+                    <i data-lucide="key-round" class="w-4 h-4"></i>
+                  </span>
+                  <input type="password" id="gateway-password" required placeholder="••••••••" class="w-full bg-slate-50 border border-slate-300 rounded-lg pl-10 pr-3.5 py-2.5 font-medium text-slate-900 text-sm focus:ring-teal-500 focus:border-teal-500 transition">
                 </div>
+              </div>
 
-                <div>
-                  <label class="block text-xs font-bold text-slate-700 mb-1">Staff Username / User ID</label>
-                  <input type="text" id="reg-username" required placeholder="e.g. oche.gabriel" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 font-medium text-slate-900 text-sm focus:ring-teal-500 focus:border-teal-500">
-                </div>
+              <button type="submit" id="btn-gateway-login-submit" class="w-full py-2.5 px-4 bg-teal-600 hover:bg-teal-700 text-white font-bold text-sm rounded-lg shadow-sm hover:shadow-md transition flex items-center justify-center space-x-2">
+                <i data-lucide="lock-open" class="w-4 h-4"></i>
+                <span>Sign In to Workspace</span>
+              </button>
 
-                <div>
-                  <label class="block text-xs font-bold text-slate-700 mb-1">Clinical Cadre / Professional Role</label>
-                  <select id="reg-role" required class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 font-medium text-slate-900 text-sm focus:ring-teal-500 focus:border-teal-500">
-                    <option value="DOCTOR">👨‍⚕️ Medical Doctor (Physician / Surgeon)</option>
-                    <option value="NURSE">👩‍⚕️ Registered Nurse (Inpatient Bedside & Vitals)</option>
-                    <option value="PHARMACIST">💊 Clinical Pharmacist (Medication & Dispensing)</option>
-                    <option value="LAB_TECH">🔬 Medical Laboratory Scientist (Diagnostics)</option>
-                    <option value="ADMIN">🛡️ Hospital Administrator (Governance & Audit)</option>
-                  </select>
-                  <p class="text-[10px] text-slate-400 mt-1 font-normal">Workspace tabs and permissions are strictly tailored to this cadre.</p>
-                </div>
+              <div class="pt-2 text-center">
+                <p class="text-xs text-slate-500">
+                  New clinical staff member?
+                  <button type="button" onclick="toggleAuthGatewayTab('register')" class="font-bold text-teal-700 hover:text-teal-800 hover:underline ml-1">
+                    Create an account
+                  </button>
+                </p>
+              </div>
+            </form>
+          </div>
 
-                <div>
-                  <label class="block text-xs font-bold text-slate-700 mb-1">Password</label>
-                  <input type="password" id="reg-password" required minlength="8" placeholder="At least 8 characters" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 font-medium text-slate-900 text-sm focus:ring-teal-500 focus:border-teal-500">
-                </div>
+          <!-- PANE 2: REGISTER CADRE ACCOUNT -->
+          <div id="pane-gateway-register" class="hidden space-y-4">
+            <form id="form-gateway-register" onsubmit="handleGatewayRegister(event)" class="space-y-3.5">
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">Full Name & Professional Title</label>
+                <input type="text" id="reg-fullname" required placeholder="e.g. Dr. Jane Doe or Nurse John Smith" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 font-medium text-slate-900 text-sm focus:ring-teal-500 focus:border-teal-500 transition">
+              </div>
 
-                <div>
-                  <label class="block text-xs font-bold text-slate-700 mb-1">Confirm Password</label>
-                  <input type="password" id="reg-confirm-password" required minlength="8" placeholder="Re-enter password" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 font-medium text-slate-900 text-sm focus:ring-teal-500 focus:border-teal-500">
-                </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">Staff Username / User ID</label>
+                <input type="text" id="reg-username" required placeholder="Choose a username (e.g. jane.doe)" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 font-medium text-slate-900 text-sm focus:ring-teal-500 focus:border-teal-500 transition">
+              </div>
 
-                <button type="submit" id="btn-gateway-register-submit" class="w-full py-2.5 px-4 bg-teal-600 hover:bg-teal-700 text-white font-bold text-sm rounded-lg shadow-sm hover:shadow-md transition flex items-center justify-center space-x-2">
-                  <i data-lucide="user-check" class="w-4 h-4"></i>
-                  <span>Create Account & Enter Workspace</span>
-                </button>
-              </form>
-            </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">Clinical Cadre / Professional Role</label>
+                <select id="reg-role" required class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 font-medium text-slate-900 text-sm focus:ring-teal-500 focus:border-teal-500 transition">
+                  <option value="DOCTOR">👨‍⚕️ Medical Doctor (Physician / Surgeon)</option>
+                  <option value="NURSE">👩‍⚕️ Registered Nurse (Inpatient Bedside & Vitals)</option>
+                  <option value="PHARMACIST">💊 Clinical Pharmacist (Medication & Dispensing)</option>
+                  <option value="LAB_TECH">🔬 Medical Laboratory Scientist (Diagnostics)</option>
+                  <option value="ADMIN">🛡️ Hospital Administrator (Governance & Audit)</option>
+                </select>
+                <p class="text-[10px] text-slate-400 mt-1 font-normal">Workspace permissions and tabs are scoped to your selected cadre.</p>
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">Password</label>
+                <input type="password" id="reg-password" required minlength="8" placeholder="At least 8 characters" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 font-medium text-slate-900 text-sm focus:ring-teal-500 focus:border-teal-500 transition">
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">Confirm Password</label>
+                <input type="password" id="reg-confirm-password" required minlength="8" placeholder="Re-enter password" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 font-medium text-slate-900 text-sm focus:ring-teal-500 focus:border-teal-500 transition">
+              </div>
+
+              <button type="submit" id="btn-gateway-register-submit" class="w-full py-2.5 px-4 bg-teal-600 hover:bg-teal-700 text-white font-bold text-sm rounded-lg shadow-sm hover:shadow-md transition flex items-center justify-center space-x-2">
+                <i data-lucide="user-check" class="w-4 h-4"></i>
+                <span>Create Account & Enter Workspace</span>
+              </button>
+
+              <div class="pt-2 text-center">
+                <p class="text-xs text-slate-500">
+                  Already have an account?
+                  <button type="button" onclick="toggleAuthGatewayTab('login')" class="font-bold text-teal-700 hover:text-teal-800 hover:underline ml-1">
+                    Sign In
+                  </button>
+                </p>
+              </div>
+            </form>
           </div>
         </div>
+
       </div>
 
     </div>
@@ -1072,7 +938,7 @@
       if (tab === 'audit') loadAuditLogs();
     }
 
-    // Gateway Tab Switcher (Staff Sign In vs Create Cadre Account)
+    // Gateway Tab Switcher (Staff Sign In vs Create Account)
     function toggleAuthGatewayTab(tab) {
       const loginTab = document.getElementById('tab-auth-login');
       const regTab = document.getElementById('tab-auth-register');
@@ -1080,30 +946,19 @@
       const regPane = document.getElementById('pane-gateway-register');
 
       if (tab === 'login') {
-        if (loginTab) loginTab.className = 'flex-1 py-3 text-xs font-bold text-center border-b-2 border-teal-600 text-teal-700 bg-white flex items-center justify-center space-x-2';
-        if (regTab) regTab.className = 'flex-1 py-3 text-xs font-semibold text-center border-b-2 border-transparent text-slate-500 hover:text-slate-800 flex items-center justify-center space-x-2';
+        if (loginTab) loginTab.className = 'flex-1 py-3.5 text-xs font-bold text-center border-b-2 border-teal-600 text-teal-700 bg-white flex items-center justify-center space-x-2 transition';
+        if (regTab) regTab.className = 'flex-1 py-3.5 text-xs font-semibold text-center border-b-2 border-transparent text-slate-500 hover:text-slate-800 flex items-center justify-center space-x-2 transition';
         if (loginPane) loginPane.classList.remove('hidden');
         if (regPane) regPane.classList.add('hidden');
         setTimeout(() => document.getElementById('gateway-username')?.focus(), 50);
       } else {
-        if (regTab) regTab.className = 'flex-1 py-3 text-xs font-bold text-center border-b-2 border-teal-600 text-teal-700 bg-white flex items-center justify-center space-x-2';
-        if (loginTab) loginTab.className = 'flex-1 py-3 text-xs font-semibold text-center border-b-2 border-transparent text-slate-500 hover:text-slate-800 flex items-center justify-center space-x-2';
+        if (regTab) regTab.className = 'flex-1 py-3.5 text-xs font-bold text-center border-b-2 border-teal-600 text-teal-700 bg-white flex items-center justify-center space-x-2 transition';
+        if (loginTab) loginTab.className = 'flex-1 py-3.5 text-xs font-semibold text-center border-b-2 border-transparent text-slate-500 hover:text-slate-800 flex items-center justify-center space-x-2 transition';
         if (regPane) regPane.classList.remove('hidden');
         if (loginPane) loginPane.classList.add('hidden');
         setTimeout(() => document.getElementById('reg-fullname')?.focus(), 50);
       }
       lucide.createIcons();
-    }
-
-    // Helper: Fill credentials into Gateway inputs
-    function fillGatewayCredentials(username, password, roleLabel) {
-      toggleAuthGatewayTab('login');
-      const uInput = document.getElementById('gateway-username');
-      const pInput = document.getElementById('gateway-password');
-      if (uInput) uInput.value = username;
-      if (pInput) pInput.value = password;
-      showToast(`Loaded ${roleLabel} credentials (${username}). Click "Sign In & Unlock Workspace".`, 'info');
-      uInput?.focus();
     }
 
     // Authenticated API Fetch
