@@ -41,13 +41,19 @@ def create_user_endpoint(
     user: UserCreate,
     db: Session = Depends(get_db)
 ):
-    return create_user(
-        db,
-        user.username,
-        user.full_name,
-        user.role,
-        user.password,
-    )
+    try:
+        return create_user(
+            db,
+            user.username,
+            user.full_name,
+            user.role,
+            user.password,
+        )
+    except ValueError as e:
+        raise HTTPException(
+            status_code=400,
+            detail=str(e),
+        )
 
 
 @router.get(
